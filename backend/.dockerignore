@@ -1,0 +1,51 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+package-lock.json
+
+# Source (we copy this separately)
+src/
+
+# Build output
+dist/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Documentation
+README.md
+*.md
+
+# Firebase
+serviceAccountKey.json
+firebase-key.json
+
+# Logs
+logs/
+*.log
+
+# Test files
+__tests__/
+*.test.ts
+*.spec.ts
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
