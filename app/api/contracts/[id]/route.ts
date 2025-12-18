@@ -3,6 +3,17 @@ import { adminAuth, adminDb, CONTRACTS_COLLECTION } from '@/lib/firebase-admin'
 
 export const runtime = 'nodejs'
 
+interface StoredContract {
+  id: string
+  userId: string
+  name: string
+  client: string
+  date: string
+  status: string
+  riskScore?: number
+  storagePath?: string
+}
+
 /**
  * GET /api/contracts/[id]
  * Get a specific contract
@@ -43,7 +54,7 @@ export async function GET(
       )
     }
 
-    const contract = { id: contractDoc.id, ...contractDoc.data() }
+    const contract = { id: contractDoc.id, ...contractDoc.data() } as StoredContract
 
     // Verify ownership
     if (contract.userId !== userId) {
