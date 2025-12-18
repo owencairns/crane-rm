@@ -64,13 +64,17 @@ export default function AnalysisPage() {
         summary: results.summary || `Analysis complete with ${results.findings?.length || 0} findings.`,
         findings: (results.findings || []).map(finding => ({
           id: finding.id,
-          type: finding.severity === 'high' ? 'critical' : finding.severity === 'medium' ? 'warning' : 'success',
+          priority: finding.priority,
+          matched: finding.matched,
+          confidence: finding.confidence,
           category: finding.category,
           title: finding.title,
           description: finding.description,
-          pageReference: finding.pageReference,
-          clauseReference: finding.clauseText || undefined,
+          pageReferences: finding.pageReferences,
+          evidenceExcerpts: finding.evidenceExcerpts,
+          recommendation: finding.recommendation,
         })),
+        error: results.error,
       }
 
       setResult(analysisResult)

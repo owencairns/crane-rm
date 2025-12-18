@@ -113,11 +113,46 @@ export function createAgentTools(context: ToolContext) {
       execute: async (params) => {
         const finding: Finding = {
           ...params,
+          screeningResult: params.matched ? 'analyzed_found' : 'analyzed_not_found',
           createdAt: new Date(),
         };
 
         await createFinding(contractId, analysisId, params.provisionId, finding);
         return { ok: true };
+      },
+    }),
+
+    // Tool 4b: record_batch_findings - Store multiple results
+    record_batch_findings: tool({
+      description:
+        'Records multiple findings at once. Use this when analyzing a batch of provisions.',
+      inputSchema: z.object({
+        findings: z.array(
+          z.object({
+            provisionId: z.string(),
+            priority: z.enum(['critical', 'high', 'medium', 'low']),
+            matched: z.boolean(),
+            confidence: z.number().min(0).max(1),
+            evidenceChunkIds: z.array(z.string()),
+            evidencePages: z.array(z.number()),
+            evidenceExcerpts: z.array(z.string()),
+            reasoningSummary: z.string(),
+            recommendedAction: z.string().optional(),
+          })
+        ),
+      }),
+      execute: async ({ findings }) => {
+        const promises = findings.map((params) => {
+          const finding: Finding = {
+            ...params,
+            screeningResult: params.matched ? 'analyzed_found' : 'analyzed_not_found',
+            createdAt: new Date(),
+          };
+          return createFinding(contractId, analysisId, params.provisionId, finding);
+        });
+
+        await Promise.all(promises);
+        return { ok: true, count: findings.length };
       },
     }),
 

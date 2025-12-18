@@ -10,6 +10,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Separator } from "@/components/ui/separator"
 import { toast } from "sonner"
 import { LogIn } from "lucide-react"
+import Image from "next/image"
+import Link from "next/link"
 
 export default function LoginPage() {
   const [isSignUp, setIsSignUp] = useState(false)
@@ -55,15 +57,30 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/50 p-4">
       <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">
-            {isSignUp ? "Create an account" : "Welcome back"}
-          </CardTitle>
-          <CardDescription className="text-center">
-            {isSignUp
-              ? "Enter your email to create your account"
-              : "Enter your credentials to access your account"}
-          </CardDescription>
+        <CardHeader className="space-y-4">
+          <Link href="/" className="flex flex-col items-center gap-3">
+            <Image
+              src="/red-cedar-logo.svg"
+              alt="Red Cedar Agency"
+              width={60}
+              height={60}
+              className="h-15 w-auto"
+            />
+            <div className="text-center">
+              <h1 className="font-bold text-lg text-foreground">Crane Risk Management</h1>
+              <p className="text-xs text-muted-foreground">by Red Cedar Insurance Agency</p>
+            </div>
+          </Link>
+          <div className="space-y-1">
+            <CardTitle className="text-2xl font-bold text-center">
+              {isSignUp ? "Start your 60-day free trial" : "Welcome back"}
+            </CardTitle>
+            <CardDescription className="text-center">
+              {isSignUp
+                ? "No credit card required. Get instant access."
+                : "Enter your credentials to access your account"}
+            </CardDescription>
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <form onSubmit={handleSubmit} className="space-y-4">

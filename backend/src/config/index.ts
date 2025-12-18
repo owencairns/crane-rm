@@ -21,7 +21,11 @@ export const config = {
   openai: {
     apiKey: process.env.OPENAI_API_KEY!,
     embeddingModel: 'text-embedding-3-small',
-    analysisModel: 'gpt-4o-mini', // Using GPT-4o mini as specified
+  },
+
+  google: {
+    apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY!,
+    analysisModel: 'gemini-3-flash-preview', // 1M context, 3x faster than 2.5 Pro
   },
 
   // Chunk settings
@@ -44,6 +48,7 @@ export const config = {
 const requiredVars = [
   'PINECONE_API_KEY',
   'OPENAI_API_KEY',
+  'GOOGLE_GENERATIVE_AI_API_KEY',
   'FIREBASE_PROJECT_ID',
   'FIREBASE_CLIENT_EMAIL',
   'FIREBASE_STORAGE_BUCKET',

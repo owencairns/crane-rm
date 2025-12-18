@@ -64,10 +64,10 @@ export function AppNav() {
       <nav className="border-b border-border/60 bg-background/95 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
-            <Link href="/dashboard" className="flex items-center gap-2 group">
-              <Image src="/crane-contract-logo.png" alt="Crane Contract review" width={50} height={50}/>
+            <Link href="/dashboard" className="flex items-center gap-3 group">
+              <Image src="/red-cedar-logo.svg" alt="Red Cedar Agency" width={40} height={40} className="h-10 w-auto"/>
               <span className="font-bold text-xl tracking-tight text-foreground group-hover:text-primary transition-colors">
-                Crane Contract Analyzer
+                Crane Risk Management
               </span>
             </Link>
 

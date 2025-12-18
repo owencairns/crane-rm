@@ -301,7 +301,7 @@ export default function WorkspacePage() {
           <div className="space-y-6">
             <div className="space-y-2">
               <h1 className="text-3xl font-bold tracking-tight text-foreground">Contract Analysis</h1>
-              <p className="text-muted-foreground">Upload and analyze your construction contracts.</p>
+              <p className="text-muted-foreground">Upload and analyze your crane service contracts for risk assessment.</p>
             </div>
           </div>
           <div className="text-center text-muted-foreground">Loading contracts...</div>
@@ -318,7 +318,7 @@ export default function WorkspacePage() {
         <div className="space-y-6">
           <div className="space-y-2">
             <h1 className="text-3xl font-bold tracking-tight text-foreground">Contract Analysis</h1>
-            <p className="text-muted-foreground">Upload and analyze your construction contracts.</p>
+            <p className="text-muted-foreground">Upload and analyze your crane service contracts for risk assessment.</p>
           </div>
 
           <UploadZone onUpload={handleUpload} isCompact={contracts.length > 0 || uploadedContracts.length > 0 || processingContracts.length > 0} />

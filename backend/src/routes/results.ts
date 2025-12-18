@@ -7,6 +7,7 @@ import {
   getLatestAnalysis,
   verifyContractOwnership,
 } from '../services/firebase.service';
+import { getProvisionById } from '../services/provision.service';
 
 const router = Router();
 
@@ -81,23 +82,35 @@ router.get('/:contractId', authenticate, async (req: AuthRequest, res) => {
     // Calculate risk score from findings
     const riskScore = calculateRiskScore(findings);
 
+    // Group findings by priority for summary
+    const matchedCount = findings.filter(f => f.matched).length;
+    const notFoundCount = findings.filter(f => !f.matched).length;
+
     res.json({
       contractId,
       jobId: analysisId,
       status: analysis.status || 'completed',
-      summary: `Analysis complete with ${findings.length} findings.`,
-      findings: findings.map(finding => ({
-        id: finding.provisionId,
-        severity: finding.priority, // 'critical' | 'high' | 'medium' | 'low'
-        category: 'Provision Analysis',
-        title: finding.provisionId,
-        description: finding.reasoningSummary,
-        pageReference: finding.evidencePages[0], // First page reference
-        clauseText: finding.evidenceExcerpts[0], // First excerpt
-        recommendation: finding.recommendedAction,
-      })),
+      summary: `Analysis complete: ${matchedCount} provisions found, ${notFoundCount} not found.`,
+      findings: findings.map(finding => {
+        const provision = getProvisionById(finding.provisionId);
+        return {
+          id: finding.provisionId,
+          priority: finding.priority, // 'critical' | 'high' | 'medium' | 'low'
+          matched: finding.matched, // true = found in contract, false = not found
+          confidence: finding.confidence,
+          category: finding.priority, // Group by priority
+          title: provision?.canonicalWording || finding.provisionId.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+          description: finding.reasoningSummary,
+          pageReferences: finding.evidencePages,
+          evidenceExcerpts: finding.evidenceExcerpts,
+          recommendation: finding.recommendedAction,
+          suggestedAction: finding.matched ? provision?.suggestedAction : undefined,
+          screeningResult: finding.screeningResult, // 'no_candidates' | 'analyzed_not_found' | 'analyzed_found' | 'not_analyzed' | 'error'
+        };
+      }),
       riskScore,
       completedAt: analysis.completedAt,
+      error: analysis.error,
     });
   } catch (error) {
     console.error('Error fetching contract results:', error);
@@ -105,18 +118,23 @@ router.get('/:contractId', authenticate, async (req: AuthRequest, res) => {
   }
 });
 
-// Helper function to calculate risk score
+// Helper function to calculate risk score based on NOT FOUND provisions
 function calculateRiskScore(findings: any[]): number {
   if (findings.length === 0) return 0;
 
+  // Risk is based on provisions that were NOT found in the contract
+  const notFoundFindings = findings.filter(f => !f.matched);
+
+  if (notFoundFindings.length === 0) return 0; // All provisions found = no risk
+
   const severityWeights: Record<string, number> = {
-    critical: 25,
-    high: 15,
-    medium: 8,
-    low: 3,
+    critical: 30, // Missing critical provisions are very risky
+    high: 20,
+    medium: 10,
+    low: 5,
   };
 
-  const totalScore = findings.reduce((sum, finding) => {
+  const totalScore = notFoundFindings.reduce((sum, finding) => {
     return sum + (severityWeights[finding.priority] || 0);
   }, 0);
 

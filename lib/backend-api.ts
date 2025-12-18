@@ -181,16 +181,24 @@ export const backendApi = {
       summary?: string
       findings: Array<{
         id: string
-        severity: 'critical' | 'high' | 'medium' | 'low'
+        priority: 'critical' | 'high' | 'medium' | 'low'
+        matched: boolean
+        confidence: number
         category: string
         title: string
         description: string
-        pageReference?: number
-        clauseText?: string
+        pageReferences?: number[]
+        evidenceExcerpts?: string[]
         recommendation?: string
       }>
       riskScore?: number
       completedAt?: Date
+      error?: {
+        message: string
+        code?: string
+        batchesFailed?: number
+        batchesSucceeded?: number
+      }
     }>(`/api/results/${contractId}`)
   },
 

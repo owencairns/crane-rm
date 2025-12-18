@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CertMaster Crane | Command Center",
-  description: "Advanced Contract Analysis",
+  title: "Crane Risk Management | Red Cedar Insurance Agency",
+  description: "Customized tools developed to assist Crane companies in reducing their risk through contract analysis and other risk management techniques.",
 };
 
 export default function RootLayout({

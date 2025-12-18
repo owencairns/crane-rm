@@ -12,16 +12,34 @@ export interface AnalysisResult {
   riskScore: number // 0-100
   summary: string
   findings: Finding[]
+  error?: {
+    message: string
+    code?: string
+    batchesFailed?: number
+    batchesSucceeded?: number
+  }
 }
+
+export type ScreeningResult =
+  | 'no_candidates'      // Pre-screening found no matching chunks
+  | 'analyzed_not_found' // LLM analyzed but didn't find provision
+  | 'analyzed_found'     // LLM analyzed and found provision
+  | 'not_analyzed'       // Provision wasn't processed (error/timeout)
+  | 'error'              // Error during processing
 
 export interface Finding {
   id: string
-  type: "critical" | "warning" | "info" | "success"
+  priority: "critical" | "high" | "medium" | "low"
+  matched: boolean // true = found in contract, false = not found
+  confidence: number
   category: string
   title: string
   description: string
-  pageReference?: number
-  clauseReference?: string
+  pageReferences?: number[]
+  evidenceExcerpts?: string[]
+  recommendation?: string
+  suggestedAction?: string
+  screeningResult?: ScreeningResult
 }
 
 interface AnalysisViewerProps {
@@ -41,13 +59,14 @@ export function AnalysisViewer({ result }: AnalysisViewerProps) {
     return "Low Risk"
   }
 
-  const getFindingIcon = (type: Finding["type"]) => {
-    switch (type) {
-      case "critical": return <AlertOctagon className="h-5 w-5 text-destructive" />
-      case "warning": return <AlertTriangle className="h-5 w-5 text-orange-500" />
-      case "success": return <CheckCircle className="h-5 w-5 text-green-500" />
-      default: return <Info className="h-5 w-5 text-blue-500" />
+  const getFindingIcon = (finding: Finding) => {
+    if (finding.matched) {
+      return <CheckCircle className="h-5 w-5 text-green-500" />
     }
+    if (finding.priority === 'critical' || finding.priority === 'high') {
+      return <AlertOctagon className="h-5 w-5 text-destructive" />
+    }
+    return <AlertTriangle className="h-5 w-5 text-orange-500" />
   }
 
 
@@ -80,16 +99,16 @@ export function AnalysisViewer({ result }: AnalysisViewerProps) {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="p-3 border rounded-md text-center">
-                <div className="text-2xl font-bold text-destructive">
-                  {result.findings.filter(f => f.type === "critical").length}
+                <div className="text-2xl font-bold text-green-500">
+                  {result.findings.filter(f => f.matched).length}
                 </div>
-                <div className="text-xs text-muted-foreground">Critical Issues</div>
+                <div className="text-xs text-muted-foreground">Provisions Found</div>
               </div>
               <div className="p-3 border rounded-md text-center">
-                <div className="text-2xl font-bold text-orange-500">
-                  {result.findings.filter(f => f.type === "warning").length}
+                <div className="text-2xl font-bold text-destructive">
+                  {result.findings.filter(f => !f.matched).length}
                 </div>
-                <div className="text-xs text-muted-foreground">Warnings</div>
+                <div className="text-xs text-muted-foreground">Missing</div>
               </div>
             </div>
           </CardContent>
@@ -108,7 +127,7 @@ export function AnalysisViewer({ result }: AnalysisViewerProps) {
                 {result.findings.map((finding) => (
                   <div key={finding.id} className="flex gap-4 p-4 border rounded-lg hover:bg-muted/30 transition-colors">
                     <div className="mt-1 flex-shrink-0">
-                      {getFindingIcon(finding.type)}
+                      {getFindingIcon(finding)}
                     </div>
                     <div className="flex-1 space-y-2">
                       <div className="flex items-start justify-between">
@@ -120,14 +139,11 @@ export function AnalysisViewer({ result }: AnalysisViewerProps) {
                       <p className="text-sm text-muted-foreground">
                         {finding.description}
                       </p>
-                      {(finding.pageReference || finding.clauseReference) && (
+                      {finding.pageReferences && finding.pageReferences.length > 0 && (
                         <div className="flex items-center gap-3 pt-2 text-xs text-muted-foreground">
-                          {finding.pageReference && (
-                            <span className="bg-muted px-2 py-1 rounded">Page {finding.pageReference}</span>
-                          )}
-                          {finding.clauseReference && (
-                            <span className="bg-muted px-2 py-1 rounded">Clause {finding.clauseReference}</span>
-                          )}
+                          <span className="bg-muted px-2 py-1 rounded">
+                            Page{finding.pageReferences.length > 1 ? 's' : ''} {finding.pageReferences.join(', ')}
+                          </span>
                         </div>
                       )}
                     </div>

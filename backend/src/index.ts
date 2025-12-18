@@ -3,6 +3,8 @@ import cors from 'cors';
 import { config } from './config';
 import { errorHandler } from './middleware/errorHandler';
 import { initializePinecone } from './services/pinecone.service';
+import { initializeProvisionEmbeddings } from './services/prescreening.service';
+import { getProvisionCatalog } from './services/provision.service';
 
 // Import routes
 import ingestRouter from './routes/ingest';
@@ -39,6 +41,12 @@ async function start() {
     await initializePinecone();
     console.log('Pinecone initialized');
 
+    // Initialize provision embeddings for two-pass analysis
+    const provisions = getProvisionCatalog();
+    console.log(`Pre-computing embeddings for ${provisions.length} provisions...`);
+    await initializeProvisionEmbeddings();
+    console.log('Provision embeddings cached');
+
     // Start server
     app.listen(config.port, () => {
       console.log(`
@@ -47,7 +55,8 @@ async function start() {
 Server running on port ${config.port}
 Environment: ${process.env.NODE_ENV || 'development'}
 Pinecone Index: ${config.pinecone.indexName}
-Model: ${config.openai.analysisModel}
+Model: ${config.google.analysisModel}
+Provisions: ${provisions.length} (embeddings cached)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
       `);
     });
