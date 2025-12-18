@@ -24,8 +24,8 @@ RUN npm install
 # Copy source code
 COPY . .
 
-# Build TypeScript
-RUN npm run build
+# Build TypeScript with increased memory
+RUN NODE_OPTIONS="--max-old-space-size=4096" npm run build
 
 # Production image
 FROM base AS runner
