@@ -3,8 +3,7 @@ node_modules/
 npm-debug.log*
 package-lock.json
 
-# Source (we copy this separately)
-src/
+# Source files are needed for build
 
 # Build output
 dist/
