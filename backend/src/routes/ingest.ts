@@ -47,17 +47,14 @@ router.post('/:contractId', authenticate, async (req: AuthRequest, res) => {
       });
     }
 
-    // Start processing in background (don't wait)
-    processContractAsync(contractId, userId, contract.storagePath)
-      .then(() => console.log(`Contract ${contractId} processed successfully`))
-      .catch((error) =>
-        console.error(`Error processing contract ${contractId}:`, error)
-      );
+    // Process contract and wait for completion (keeps Cloud Run instance alive)
+    await processContractAsync(contractId, userId, contract.storagePath);
+    console.log(`Contract ${contractId} processed successfully`);
 
     res.json({
-      message: 'Contract processing started',
+      message: 'Contract processing complete',
       contractId,
-      status: 'processing',
+      status: 'complete',
     });
   } catch (error) {
     console.error('Error starting contract processing:', error);

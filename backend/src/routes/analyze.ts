@@ -58,17 +58,14 @@ router.post('/:contractId', authenticate, async (req: AuthRequest, res) => {
 
     await createAnalysis(contractId, analysisId, analysis);
 
-    // Start analysis in background
+    // Run analysis and wait for completion (keeps Cloud Run instance alive)
     const provisions = getProvisionCatalog();
 
-    runAnalysisAsync(userId, contractId, analysisId, provisions)
-      .then(() => console.log(`Analysis ${analysisId} completed`))
-      .catch((error) =>
-        console.error(`Analysis ${analysisId} failed:`, error)
-      );
+    await runAnalysisAsync(userId, contractId, analysisId, provisions);
+    console.log(`Analysis ${analysisId} completed`);
 
     res.json({
-      message: 'Analysis started',
+      message: 'Analysis complete',
       analysisId,
       contractId,
       provisionCount: provisions.length,
@@ -117,14 +114,11 @@ export async function startAnalysis(contractId: string, userId: string): Promise
 
   await createAnalysis(contractId, analysisId, analysis);
 
-  // Start analysis in background
+  // Run analysis and wait for completion
   const provisions = getProvisionCatalog();
 
-  runAnalysisAsync(userId, contractId, analysisId, provisions)
-    .then(() => console.log(`Analysis ${analysisId} completed`))
-    .catch((error) =>
-      console.error(`Analysis ${analysisId} failed:`, error)
-    );
+  await runAnalysisAsync(userId, contractId, analysisId, provisions);
+  console.log(`Analysis ${analysisId} completed`);
 }
 
 export default router;
