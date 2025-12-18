@@ -3,10 +3,9 @@ node_modules/
 npm-debug.log*
 package-lock.json
 
-# Source files are needed for build
-
-# Build output
-dist/
+# Source files not needed (using pre-built dist)
+src/
+tsconfig.json
 
 # Environment files
 .env

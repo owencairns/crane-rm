@@ -1,34 +1,6 @@
-# Multi-stage build for optimal image size
-FROM node:20-alpine AS base
+# Simple production Dockerfile using pre-built code
+FROM node:20-alpine
 
-# Install dependencies only when needed
-FROM base AS deps
-WORKDIR /app
-
-# Copy package files
-COPY package*.json ./
-
-# Install dependencies
-RUN npm install --omit=dev
-
-# Build the application
-FROM base AS builder
-WORKDIR /app
-
-# Copy package files
-COPY package*.json ./
-
-# Install all dependencies (including dev dependencies for build)
-RUN npm install
-
-# Copy source code
-COPY . .
-
-# Build TypeScript with increased memory
-RUN NODE_OPTIONS="--max-old-space-size=4096" npm run build
-
-# Production image
-FROM base AS runner
 WORKDIR /app
 
 # Set environment to production
@@ -38,10 +10,15 @@ ENV NODE_ENV=production
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 expressjs
 
-# Copy built application
-COPY --from=builder --chown=expressjs:nodejs /app/dist ./dist
-COPY --from=deps --chown=expressjs:nodejs /app/node_modules ./node_modules
-COPY --from=builder --chown=expressjs:nodejs /app/package*.json ./
+# Copy package files and install production dependencies
+COPY package*.json ./
+RUN npm install --omit=dev
+
+# Copy pre-built application
+COPY dist ./dist
+
+# Change ownership to non-root user
+RUN chown -R expressjs:nodejs /app
 
 # Switch to non-root user
 USER expressjs
