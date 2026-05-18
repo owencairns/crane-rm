@@ -25,14 +25,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
-import { User, LogOut, ChevronDown, Mail, Calendar, Shield, Sun, Moon } from "lucide-react"
+import { User, LogOut, ChevronDown, Mail, Calendar, Shield } from "lucide-react"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
-import { useTheme } from "next-themes"
 
 export function AppNav() {
   const { user, signOut } = useAuth()
-  const { theme, setTheme } = useTheme()
   const router = useRouter()
   const [showProfileModal, setShowProfileModal] = useState(false)
 
@@ -61,7 +59,7 @@ export function AppNav() {
 
   return (
     <>
-      <nav className="border-b border-border/60 bg-background/95 backdrop-blur-sm sticky top-0 z-50">
+      <nav className="border-b border-border/60 bg-background/95 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             <Link href="/dashboard" className="flex items-center gap-3 group">
@@ -206,38 +204,6 @@ export function AppNav() {
                       disabled
                       className="bg-muted"
                     />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Appearance</CardTitle>
-                <CardDescription>Customize how the app looks</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <Label>Theme</Label>
-                  <div className="flex gap-2">
-                    <Button
-                      variant={theme === "light" ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setTheme("light")}
-                      className="flex-1"
-                    >
-                      <Sun className="mr-2 h-4 w-4" />
-                      Light
-                    </Button>
-                    <Button
-                      variant={theme === "dark" ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setTheme("dark")}
-                      className="flex-1"
-                    >
-                      <Moon className="mr-2 h-4 w-4" />
-                      Dark
-                    </Button>
                   </div>
                 </div>
               </CardContent>

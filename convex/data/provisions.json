@@ -1,0 +1,835 @@
+[
+  {
+    "provisionId": "consequential-damages",
+    "priority": "critical",
+    "canonicalWording": "Consequential damages (broad, inflationary)",
+    "synonyms": ["consequential damages", "indirect damages", "lost profits", "loss of use", "special damages"],
+    "definition": "Liability for indirect damages like lost profits, delay of projects, lost rental income, increased financing costs, lost opportunity costs, or business interruption. Insurance may not cover these expansive damages.",
+    "suggestedAction": "Do not indemnify GCs or project owners for consequential damages.",
+    "falsePositiveTraps": ["Waiver of consequential damages (good)", "Direct damages only", "Mutual waiver of consequentials"],
+    "confidenceRubric": {
+      "explicit": "Explicit liability for \"consequential\", \"indirect\", or \"special\" damages",
+      "strongParaphrase": "Liability includes lost profits, loss of use, or business interruption",
+      "weak": "Silence on consequential damages (implies liability in some jurisdictions)"
+    },
+    "searchQueries": ["consequential damages liability", "indirect damages indemnity", "lost profits damages clause"],
+    "exactPatterns": ["consequential damages", "indirect damages", "lost profits", "loss of use", "special damages", "incidental damages"],
+    "clusterId": "damages"
+  },
+  {
+    "provisionId": "liquidated-damages",
+    "priority": "critical",
+    "canonicalWording": "Liquidated damages",
+    "synonyms": ["liquidated damages", "delay damages", "per diem damages", "LDs", "daily damages"],
+    "definition": "Predetermined damages paid for each day of delay. Even small delays with small claims can lead to large liquidated damages. May include act of God delays. Insurance carriers may not provide coverage.",
+    "suggestedAction": "Avoid signing up for liquidated damages indemnification.",
+    "falsePositiveTraps": ["Actual damages", "Consequential damages waivers", "Delay claims without preset amount"],
+    "confidenceRubric": {
+      "explicit": "Explicit \"liquidated damages\" clause with amount/rate",
+      "strongParaphrase": "Clear daily penalty for delay",
+      "weak": "Mentions damages for delay without specific LD structure"
+    },
+    "searchQueries": ["liquidated damages clause", "delay penalty per day", "daily damages rate", "per diem delay damages"],
+    "exactPatterns": ["liquidated damages", "per diem", "per day", "delay damages", "daily rate", "\\$.*per calendar day"],
+    "clusterId": "damages"
+  },
+  {
+    "provisionId": "arising-out-of-language",
+    "priority": "critical",
+    "canonicalWording": "\"Arising out of\" language instead of \"caused by\"",
+    "synonyms": ["arising out of", "resulting from", "in connection with", "related to"],
+    "definition": "Broad causal link for indemnity (\"arising out of\") vs. narrow (\"caused by\"). \"Arising out of\" is extremely broad and can pull you into claims even when your work did not cause the damage.",
+    "suggestedAction": "Replace \"arising out of\" with \"caused by\" language—indemnity should only apply to claims caused in whole or in part by your work.",
+    "falsePositiveTraps": ["\"Caused by\" (narrower and acceptable)", "\"To the extent caused by\" (best)", "\"Directly caused by\""],
+    "confidenceRubric": {
+      "explicit": "Use of \"arising out of\" or \"in connection with\" regarding indemnity scope",
+      "strongParaphrase": "Broad causal language linking work to claims without direct causation",
+      "weak": "Standard \"caused by\" language"
+    },
+    "searchQueries": ["arising out of indemnity", "in connection with claims", "resulting from work indemnification"],
+    "exactPatterns": ["arising out of", "in connection with", "resulting from", "related to the work", "arising from"],
+    "clusterId": "indemnity"
+  },
+  {
+    "provisionId": "claims-sole-willful-negligence",
+    "priority": "critical",
+    "canonicalWording": "Indemnifying GC for their sole or willful negligence",
+    "synonyms": ["indemnify sole negligence", "willful misconduct indemnity", "sole fault", "regardless of negligence", "regardless of fault"],
+    "definition": "Requirement to indemnify the GC even for their own sole or willful negligence. You should not sign up for liability that is not your fault.",
+    "suggestedAction": "Avoid this. Contracts should read that the claim was caused by your work before you indemnify.",
+    "falsePositiveTraps": ["Indemnity to fullest extent permitted by law (often saves this)", "Partial negligence", "Comparative fault"],
+    "confidenceRubric": {
+      "explicit": "Explicit requirement to indemnify for GC's \"sole negligence\" or \"willful misconduct\"",
+      "strongParaphrase": "Indemnity applies regardless of whether caused by Indemnitee",
+      "weak": "Broad indemnity without sole negligence exclusion"
+    },
+    "searchQueries": ["indemnify sole negligence", "regardless of fault indemnity", "willful misconduct coverage"],
+    "exactPatterns": ["sole negligence", "willful misconduct", "regardless of negligence", "regardless of fault", "whether or not caused by"],
+    "clusterId": "indemnity"
+  },
+  {
+    "provisionId": "ocip-enrollment-post-start",
+    "priority": "critical",
+    "canonicalWording": "Being asked to enroll in an OCIP after work has started",
+    "synonyms": ["enroll in OCIP", "CCIP enrollment", "wrap-up enrollment", "OSIP late enrollment"],
+    "definition": "Requirement to enroll in an OCIP/CCIP after work has commenced. You will not have coverage for work done before enrollment, and may trigger exclusions under your own CGL policy. Must get backdated coverage in writing or decline enrollment.",
+    "suggestedAction": "Always confirm eligibility with your agent before enrolling. Request the manual and contact the OCIP administrator. Allow a minimum of 5 business days to explore enrollment. Never enroll after work has started unless you get written confirmation of backdated coverage. If not eligible, do not enroll—it may trigger exclusions under your own CGL policy.",
+    "falsePositiveTraps": ["Standard OCIP enrollment before work", "Optional enrollment", "Enrollment before mobilization"],
+    "confidenceRubric": {
+      "explicit": "Explicit requirement to enroll in OCIP/CCIP despite work having started",
+      "strongParaphrase": "Clause stating insurance program enrollment is required at any stage",
+      "weak": "Mentions OCIP without timing context"
+    },
+    "searchQueries": ["OCIP enrollment requirement", "controlled insurance program enrollment", "CCIP participation", "wrap-up insurance enrollment"],
+    "exactPatterns": ["ocip", "ccip", "controlled insurance program", "wrap-up", "owner controlled", "contractor controlled insurance"],
+    "clusterId": "insurance-programs"
+  },
+  {
+    "provisionId": "completed-operations-ai",
+    "priority": "critical",
+    "canonicalWording": "Required completed operations additional insured",
+    "synonyms": ["completed operations additional insured", "products-completed operations AI", "ongoing and completed operations", "completed ops AI"],
+    "definition": "Requirement to name additional insureds for completed operations coverage. Crane companies are service providers, not contractors - when the hoist is done, your work is done. Completed ops AI allows GCs to pull you into claims years later for work you are not responsible for.",
+    "suggestedAction": "Do not provide completed operations additional insured endorsements. Remove this from all contracts. Push back on every certificate request.",
+    "falsePositiveTraps": ["Ongoing operations only", "General AI requirement without completed ops", "During project only"],
+    "confidenceRubric": {
+      "explicit": "Explicit requirement for \"completed operations\" additional insured status",
+      "strongParaphrase": "Requirement to maintain AI status after project completion",
+      "weak": "General additional insured clause without completed ops mention"
+    },
+    "searchQueries": ["completed operations additional insured", "products completed operations coverage", "AI coverage after completion"],
+    "exactPatterns": ["completed operations", "products-completed", "CG 20 37", "products and completed operations", "ongoing and completed"],
+    "clusterId": "additional-insured"
+  },
+  {
+    "provisionId": "indemnity-acts-of-god",
+    "priority": "critical",
+    "canonicalWording": "Indemnity against acts of god",
+    "synonyms": ["indemnify acts of god", "force majeure indemnity", "weather indemnity", "natural disaster liability"],
+    "definition": "Requirement to indemnify for events outside human control (acts of God). It is outside your control whether there is an act of God that prevents you from doing your work. Includes site conditions unsuitable for work due to soil compaction, water flow, etc.",
+    "suggestedAction": "Remove indemnification for acts of God from contracts. Do not sign up for liquidated damages that can be caused in whole or in part by acts of God.",
+    "falsePositiveTraps": ["Force majeure excusing performance (good)", "Standard indemnity for negligence", "Weather delays without indemnity"],
+    "confidenceRubric": {
+      "explicit": "Explicit indemnity for \"acts of God\" or natural disasters",
+      "strongParaphrase": "Indemnity regardless of cause or fault, including nature",
+      "weak": "Broad indemnity without specific act of God inclusion"
+    },
+    "searchQueries": ["indemnify acts of god", "force majeure indemnification", "weather event liability", "natural disaster indemnity"],
+    "exactPatterns": ["acts of god", "force majeure", "natural disaster", "weather event", "flood", "earthquake", "hurricane"],
+    "clusterId": "indemnity"
+  },
+  {
+    "provisionId": "indemnity-underground-conditions",
+    "priority": "critical",
+    "canonicalWording": "Indemnifying for underground conditions or site survey",
+    "synonyms": ["underground indemnity", "site conditions indemnity", "subsurface conditions", "underground utilities"],
+    "definition": "Indemnity for damage to underground utilities or unknown site conditions. A third party should do site survey and locate underground. GC/owner should agree (not dictate) equipment placement. Do not indemnify for damage to underground utilities.",
+    "suggestedAction": "Do not indemnify for damage to underground utilities or site conditions.",
+    "falsePositiveTraps": ["Responsibility to call 811 (standard)", "Known utilities only", "Site visit requirement"],
+    "confidenceRubric": {
+      "explicit": "Explicit indemnity for underground/subsurface conditions or utilities",
+      "strongParaphrase": "Subcontractor assumes all risk of site conditions",
+      "weak": "General site inspection clause"
+    },
+    "searchQueries": ["underground utilities indemnity", "subsurface conditions liability", "site survey responsibility"],
+    "exactPatterns": ["underground", "subsurface", "utilities", "site conditions", "buried", "subterranean"],
+    "clusterId": "indemnity"
+  },
+  {
+    "provisionId": "pass-through-provisions",
+    "priority": "critical",
+    "canonicalWording": "Unseen master contract pass-through provisions",
+    "synonyms": ["incorporated by reference", "flow down", "pass through", "master agreement", "prime contract terms"],
+    "definition": "Incorporation of a Prime/Master Contract that is not attached. Multiple contracts (bid, PO, tags, master agreement) may dictate liability. Understand which contract has precedence.",
+    "suggestedAction": "Request a copy of the master contract before signing. Understand which contract has precedence and review all incorporated documents.",
+    "falsePositiveTraps": ["Attached master contract", "Specific exclusions of master terms", "Reference without incorporation"],
+    "confidenceRubric": {
+      "explicit": "States Master Agreement is incorporated/governs",
+      "strongParaphrase": "Subcontractor bound to Contractor as Contractor is to Owner",
+      "weak": "Reference to Prime Contract without full incorporation"
+    },
+    "searchQueries": ["master agreement incorporated", "prime contract flow down", "bound to contractor as contractor bound to owner"],
+    "exactPatterns": ["incorporated by reference", "flow down", "pass through", "master agreement", "prime contract", "bound to contractor"],
+    "clusterId": "contract-terms"
+  },
+  {
+    "provisionId": "payment-terms",
+    "priority": "critical",
+    "canonicalWording": "Poor, drawn-out payment terms (Pay-if-Paid)",
+    "synonyms": ["pay when paid", "pay if paid", "payment terms", "retention", "retainage"],
+    "definition": "Unfavorable payment schedules (e.g., Pay-if-Paid, long delays). Pay-if-Paid makes owner payment a condition precedent to your payment.",
+    "suggestedAction": "Negotiate for 'pay-when-paid' instead of 'pay-if-paid.' Avoid payment terms exceeding 60 days. Negotiate reasonable retainage terms and timely release.",
+    "falsePositiveTraps": ["Standard Net 30", "Pay-when-paid (better than if-paid)", "Progress payments"],
+    "confidenceRubric": {
+      "explicit": "Explicit \"Pay-if-Paid\" or payment terms > 60 days",
+      "strongParaphrase": "Payment contingent on Owner payment as condition precedent",
+      "weak": "Standard progress payment language"
+    },
+    "searchQueries": ["pay when paid clause", "payment contingent on owner", "retainage release terms"],
+    "exactPatterns": ["pay when paid", "pay if paid", "pay-when-paid", "pay-if-paid", "retainage", "retention", "condition precedent"],
+    "clusterId": "payment"
+  },
+  {
+    "provisionId": "third-party-property-bailment",
+    "priority": "critical",
+    "canonicalWording": "Bailment - responsibility for third-party property",
+    "synonyms": ["bailment", "care custody control", "property of others", "storage responsibility", "cargo liability"],
+    "definition": "Liability for property of others while in your care/custody. Bailment coverage spans warehouse storage, cargo/transit, job site, and during rigging/hoist. May need coverage on multiple policies (CGL care-custody-control, riggers liability, cargo/inland marine). Limit liability in bids/tags if property value is not declared.",
+    "suggestedAction": "Clearly identify in contracts, bids, purchase orders, and tags how much bailment coverage you'll provide (or if you'll provide any). Make this a discussion point so there are no surprises. Review care, custody, control endorsements with your agent.",
+    "falsePositiveTraps": ["Damage to own work", "Standard GL exclusions", "Builder's risk coverage"],
+    "confidenceRubric": {
+      "explicit": "Explicit assumption of liability for third-party property/cargo",
+      "strongParaphrase": "Responsibility for goods in transit, storage, or during rigging",
+      "weak": "General property damage clause"
+    },
+    "searchQueries": ["bailment coverage responsibility", "care custody control liability", "third party property indemnity"],
+    "exactPatterns": ["bailment", "care custody control", "property of others", "cargo", "in transit", "storage"],
+    "clusterId": "property-liability"
+  },
+  {
+    "provisionId": "indemnity-others-tools",
+    "priority": "critical",
+    "canonicalWording": "Indemnity for others' tools and equipment",
+    "synonyms": ["indemnity for equipment", "borrowed equipment", "use of others tools", "contractor tools"],
+    "definition": "Requirement to indemnify for tools/equipment belonging to others. Every contractor should be responsible for their own tools and equipment, even if you are hoisting them.",
+    "suggestedAction": "Do not indemnify anyone for their tools and equipment. Every contractor should be responsible for their own.",
+    "falsePositiveTraps": ["Indemnity for own equipment", "Damage to equipment you caused", "Rental equipment you ordered"],
+    "confidenceRubric": {
+      "explicit": "Indemnity covers use of Contractor's or others' equipment",
+      "strongParaphrase": "Subcontractor liable for any equipment on site",
+      "weak": "General equipment responsibility"
+    },
+    "searchQueries": ["tools equipment indemnity", "contractor equipment liability", "borrowed equipment coverage"],
+    "exactPatterns": ["tools and equipment", "contractor's equipment", "equipment indemnity", "property of contractor"],
+    "clusterId": "indemnity"
+  },
+  {
+    "provisionId": "indemnity-crane-access",
+    "priority": "critical",
+    "canonicalWording": "Indemnity for crane access and site security",
+    "synonyms": ["access indemnity", "site security", "safe access", "crane security"],
+    "definition": "Indemnity for site access routes or security of the crane. Large claims have been caused by unauthorized people near crane equipment. Site security and access control should be spelled out - GC should be responsible.",
+    "suggestedAction": "Do not sign up to be responsible for site security. Ensure the subcontract spells out that the GC/owner is responsible for site security and limiting access to the crane. Consider adding this to your bids or tickets.",
+    "falsePositiveTraps": ["Standard site access rights", "Security of own tools", "Your own crane security"],
+    "confidenceRubric": {
+      "explicit": "Indemnity for site access accidents or security failures",
+      "strongParaphrase": "Subcontractor assumes risk of site access conditions and security",
+      "weak": "Requirement to secure own equipment"
+    },
+    "searchQueries": ["site security indemnity", "crane access liability", "site access responsibility"],
+    "exactPatterns": ["site security", "access", "security", "unauthorized", "access routes"],
+    "clusterId": "site-conditions"
+  },
+  {
+    "provisionId": "joint-ventures-borrowed-servant",
+    "priority": "critical",
+    "canonicalWording": "Joint ventures, bare rentals, borrowed servant",
+    "synonyms": ["joint venture", "borrowed servant", "joint employer", "bare rental", "equipment rental without operator"],
+    "definition": "Clauses creating joint liability, joint employment, or borrowed servant status. When renting equipment without operator to another crane company, they must be responsible for the crane value, and provide AI status and waivers of subrogation on GL, excess, auto, and workers comp.",
+    "suggestedAction": "Ensure liability and indemnity are clearly delineated. If bare-renting equipment, require the renter to be responsible for the crane's value, provide you additional insured on their GL and excess, and provide waivers of subrogation on GL, excess, auto, and workers comp.",
+    "falsePositiveTraps": ["Independent contractor status (good)", "Standard rental terms with operator", "Equipment lease"],
+    "confidenceRubric": {
+      "explicit": "Explicit \"borrowed servant\" or \"joint venture\" language",
+      "strongParaphrase": "Employees deemed employees of Contractor",
+      "weak": "Direction and control language"
+    },
+    "searchQueries": ["borrowed servant clause", "joint venture liability", "bare rental terms"],
+    "exactPatterns": ["borrowed servant", "joint venture", "joint employer", "bare rental", "loaned employee"],
+    "clusterId": "employment-liability"
+  },
+  {
+    "provisionId": "extended-completed-ops",
+    "priority": "critical",
+    "canonicalWording": "Certificates required past project completion (statute of repose)",
+    "synonyms": ["statute of repose", "statute of limitations", "maintain insurance after completion", "tail coverage", "10 year certificates"],
+    "definition": "Requirement to maintain insurance/certificates for years after completion (e.g., 10 years for CA SB-800). Crane entities are service providers, not contractors - should not be subject to construction defect timelines. Remove certificate holders when project completes.",
+    "suggestedAction": "Reject contracts requiring a multi-year certificate tail. Do not provide certificates past project completion. When you renew, remove those certificate holders.",
+    "falsePositiveTraps": ["Maintain during project", "1 year warranty period", "Until final payment"],
+    "confidenceRubric": {
+      "explicit": "Requirement to maintain insurance for statute of repose/limitations or >2 years after completion",
+      "strongParaphrase": "Extended completed operations coverage required for multiple years",
+      "weak": "Maintain insurance until final payment"
+    },
+    "searchQueries": ["statute of repose insurance", "maintain certificates after completion", "extended coverage period"],
+    "exactPatterns": ["statute of repose", "statute of limitations", "years after completion", "tail", "SB-800", "SB800"],
+    "clusterId": "insurance-duration"
+  },
+  {
+    "provisionId": "architects-engineers-ai",
+    "priority": "critical",
+    "canonicalWording": "Making architects or engineers additional insured",
+    "synonyms": ["architect additional insured", "engineer additional insured", "design professional AI", "A/E additional insured"],
+    "definition": "Requirement to name design professionals (Architects/Engineers) as AI. There is no merit to this request - these parties typically do not reciprocate AI and could not be causality to your claims.",
+    "suggestedAction": "Do not provide additional insured endorsements to architects or engineers.",
+    "falsePositiveTraps": ["Indemnity to A/E (different)", "Contractor/Owner only", "Design-build where you have design responsibility"],
+    "confidenceRubric": {
+      "explicit": "Explicit requirement to add Architect/Engineer as Additional Insured",
+      "strongParaphrase": "AI status extends to all agents/consultants/design professionals of Owner",
+      "weak": "Indemnity extends to agents"
+    },
+    "searchQueries": ["architect additional insured", "engineer AI endorsement", "design professional coverage"],
+    "exactPatterns": ["architect", "engineer", "design professional", "A/E", "design consultant"],
+    "clusterId": "additional-insured"
+  },
+  {
+    "provisionId": "traffic-control-indemnity",
+    "priority": "critical",
+    "canonicalWording": "Traffic control indemnification (if not providing)",
+    "synonyms": ["traffic control", "MOT", "maintenance of traffic", "traffic management"],
+    "definition": "Indemnity for traffic control operations when you are not providing the traffic control services. If you do provide traffic control, recommend separating that entity from crane/rigging to compartmentalize liability.",
+    "suggestedAction": "Do not indemnify for traffic control unless you're providing those services. If you do provide traffic control, consider wholly separating that entity from your crane/heavy haul operation to compartmentalize liability.",
+    "falsePositiveTraps": ["Compliance with traffic laws", "Parking regulations", "You are providing traffic control"],
+    "confidenceRubric": {
+      "explicit": "Indemnity covers traffic control or MOT operations",
+      "strongParaphrase": "Responsibility for public way safety/traffic",
+      "weak": "General safety compliance"
+    },
+    "searchQueries": ["traffic control indemnity", "maintenance of traffic liability", "MOT responsibility"],
+    "exactPatterns": ["traffic control", "maintenance of traffic", "MOT", "traffic management", "public way"],
+    "clusterId": "site-conditions"
+  },
+  {
+    "provisionId": "homeowners-ai",
+    "priority": "critical",
+    "canonicalWording": "Additional insured in favor of homeowners",
+    "synonyms": ["homeowner additional insured", "HOA additional insured", "residential owner", "unit owner AI"],
+    "definition": "Requirement to name individual homeowners or HOAs as Additional Insured. Never make a homeowner an additional insured, especially with completed operations. Homeowners can be difficult - deal with issues directly rather than through insurance.",
+    "suggestedAction": "Never make a homeowner an additional insured, especially with completed operations. Deal with minor issues directly rather than giving them access to your GL policy.",
+    "falsePositiveTraps": ["Owner (commercial) AI", "Property manager AI", "Developer AI"],
+    "confidenceRubric": {
+      "explicit": "Requirement to name Homeowners or HOA as Additional Insured",
+      "strongParaphrase": "AI extends to residential unit owners",
+      "weak": "Owner defined broadly to potentially include residents"
+    },
+    "searchQueries": ["homeowner additional insured", "HOA AI endorsement", "residential owner coverage"],
+    "exactPatterns": ["homeowner", "HOA", "home owner", "residential owner", "unit owner", "condominium owner"],
+    "clusterId": "additional-insured"
+  },
+  {
+    "provisionId": "scope-limit-rigging",
+    "priority": "critical",
+    "canonicalWording": "Scope must be limited to crane service when others are rigging",
+    "synonyms": ["scope of work", "rigging responsibility", "hook only", "crane only service"],
+    "definition": "When you are only providing crane service and others are rigging, scope of work and indemnity must be limited to crane service only. The rigger should indemnify the crane company.",
+    "suggestedAction": "Ensure your contract limits indemnity to your actual scope (crane service only). The rigger should indemnify the crane company when you're only providing crane service.",
+    "falsePositiveTraps": ["Full scope including rigging", "Turnkey service", "You are providing rigging"],
+    "confidenceRubric": {
+      "explicit": "Scope includes rigging by others or vague \"hoisting services\"",
+      "strongParaphrase": "Subcontractor responsible for all rigging even when not performing it",
+      "weak": "General scope description"
+    },
+    "searchQueries": ["scope of work rigging", "crane service only", "rigging responsibility"],
+    "exactPatterns": ["rigging", "hoisting", "scope of work", "crane service", "hook"],
+    "clusterId": "scope"
+  },
+  {
+    "provisionId": "sign-contract-post-completion",
+    "priority": "critical",
+    "canonicalWording": "Being asked to sign a contract after work is completed",
+    "synonyms": ["ratification of work", "retroactive execution", "sign after completion"],
+    "definition": "Requirement to sign the agreement after services have already been rendered",
+    "suggestedAction": "Do not sign contracts after work has been completed. Negotiate and sign all contracts before work begins. If pressured to sign retroactively, consult your attorney.",
+    "falsePositiveTraps": ["Standard effective date clauses", "Renewal terms", "Change order for additional work"],
+    "confidenceRubric": {
+      "explicit": "Explicit statement that contract applies retroactively to completed work",
+      "strongParaphrase": "Clause acknowledging work done prior to signature",
+      "weak": "General effective date language"
+    },
+    "searchQueries": ["retroactive contract execution", "sign after work completed", "ratification of prior work"],
+    "exactPatterns": ["retroactive", "ratification", "work already performed", "prior to execution"],
+    "clusterId": "contract-terms"
+  },
+  {
+    "provisionId": "gc-warranty-guarantee",
+    "priority": "critical",
+    "canonicalWording": "GC's Warranty or Guarantee beyond standard workmanship",
+    "synonyms": ["warranty", "guarantee", "warrant work", "guarantee of performance", "guarantee results"],
+    "definition": "Broad warranty or guarantee obligations beyond standard workmanship. Crane companies are service providers - warranty should be limited to proper operation of equipment.",
+    "suggestedAction": "Limit warranty to proper operation of equipment only. Crane companies are service providers—do not warrant construction outcomes or results.",
+    "falsePositiveTraps": ["Standard workmanship warranty", "Manufacturer warranty", "Equipment warranty"],
+    "confidenceRubric": {
+      "explicit": "Broad warranty/guarantee of results or performance beyond standard workmanship",
+      "strongParaphrase": "Clause guaranteeing satisfaction or specific outcomes",
+      "weak": "Standard warranty of good workmanship"
+    },
+    "searchQueries": ["warranty guarantee clause", "performance guarantee", "warranty of results"],
+    "exactPatterns": ["warrant", "guarantee", "warranted", "guaranteed"],
+    "clusterId": "contract-terms"
+  },
+  {
+    "provisionId": "subcontractor-vs-service-provider",
+    "priority": "high",
+    "canonicalWording": "\"Subcontractor\" should be \"Service Provider\"",
+    "synonyms": ["subcontractor definition", "service provider", "vendor", "contractor"],
+    "definition": "Crane companies are service providers, not subcontractors. Being called \"Subcontractor\" subjects you to construction contract obligations that may not apply to service providers.",
+    "suggestedAction": "Request that 'Subcontractor' be changed to 'Service Provider' or 'Vendor' to avoid construction-specific obligations that don't apply to crane service.",
+    "falsePositiveTraps": ["Already uses \"Service Provider\"", "Uses \"Vendor\""],
+    "confidenceRubric": {
+      "explicit": "Agreement refers to party as \"Subcontractor\"",
+      "strongParaphrase": "Agreement is titled \"Subcontract Agreement\"",
+      "weak": "Refers to \"Vendor\" or \"Supplier\""
+    },
+    "searchQueries": ["subcontractor definition", "service provider agreement", "subcontract terms"],
+    "exactPatterns": ["subcontractor", "subcontract", "sub-contractor"],
+    "clusterId": "contract-terms"
+  },
+  {
+    "provisionId": "gl-limits-mismatch",
+    "priority": "high",
+    "canonicalWording": "Insurance limits should match project size",
+    "synonyms": ["GL limits", "umbrella limits", "excess liability", "insurance requirements"],
+    "definition": "Liability limits should match project profitability. For contracts under $15-25K, provide only base GL ($1M/$2M). $25K-$125K add first excess layer. $125K-$250K add more. Only provide full tower ($15-35M+) for large, long-term projects.",
+    "suggestedAction": "Match limits to project size. Provide only your first layer of GL ($1M/$2M) for contracts under $15–25K. Add excess layers proportionally as contract value increases. Push back when small projects demand excessive limits.",
+    "falsePositiveTraps": ["Standard limits", "Large long-term project", "Limits match project size"],
+    "confidenceRubric": {
+      "explicit": "Requires Umbrella/Excess limits significantly exceeding project value",
+      "strongParaphrase": "High limit requirements for small contract value",
+      "weak": "Standard $1M/$2M limits"
+    },
+    "searchQueries": ["insurance limits requirements", "umbrella excess limits", "liability limits required"],
+    "exactPatterns": ["million", "umbrella", "excess", "aggregate", "per occurrence"],
+    "clusterId": "insurance-limits"
+  },
+  {
+    "provisionId": "arbitration-vs-mediation",
+    "priority": "high",
+    "canonicalWording": "Mediation vs. arbitration dispute resolution",
+    "synonyms": ["arbitration", "mediation", "dispute resolution", "binding arbitration", "AAA"],
+    "definition": "Understand the difference between mediation and arbitration for claim settlement. Consult your attorney about which is preferable for your situation.",
+    "suggestedAction": "Consult your attorney about whether mediation or arbitration is preferable for your situation before agreeing to binding dispute resolution terms.",
+    "falsePositiveTraps": ["Litigation only", "Mediation as prerequisite to litigation", "Non-binding arbitration"],
+    "confidenceRubric": {
+      "explicit": "Binding arbitration clause",
+      "strongParaphrase": "Disputes resolved by AAA rules",
+      "weak": "Mediation encouraged"
+    },
+    "searchQueries": ["arbitration clause", "dispute resolution binding", "mediation requirement"],
+    "exactPatterns": ["arbitration", "mediation", "AAA", "dispute resolution", "binding"],
+    "clusterId": "dispute-resolution"
+  },
+  {
+    "provisionId": "competent-person-obligations",
+    "priority": "high",
+    "canonicalWording": "Competent person commitments exceeding OSHA",
+    "synonyms": ["competent person", "safety representative", "superintendent", "site safety"],
+    "definition": "Requirements for \"competent person\" beyond standard OSHA definitions. Do not agree to provide competent person for other parties or indemnify for site safety of other subcontractors.",
+    "suggestedAction": "Avoid providing your competent person for others or indemnifying for this. Do not sign up for responsibility for other parties' site safety.",
+    "falsePositiveTraps": ["Standard OSHA compliance", "Site safety rep for your crew only", "Your own competent person"],
+    "confidenceRubric": {
+      "explicit": "Competent person required for other parties or on site at all times",
+      "strongParaphrase": "Responsible for site safety of other subcontractors",
+      "weak": "Comply with safety laws"
+    },
+    "searchQueries": ["competent person requirements", "site safety responsibility", "OSHA competent person"],
+    "exactPatterns": ["competent person", "site safety", "safety supervisor", "safety representative"],
+    "clusterId": "safety"
+  },
+  {
+    "provisionId": "conflicting-terms",
+    "priority": "high",
+    "canonicalWording": "Conflicts between bid/PO terms and contract",
+    "synonyms": ["order of precedence", "supersedes", "entire agreement", "integration clause", "conflicting terms"],
+    "definition": "Clause stating contract supersedes all prior proposals/bids. Multiple documents (bid, PO, tags, master agreement) may dictate liability - understand which has precedence.",
+    "suggestedAction": "Work with an attorney to review all documents and understand which contract takes precedence. Ensure your bid terms and limitations of liability are clear.",
+    "falsePositiveTraps": ["Incorporates proposal terms", "Proposal attached and governs", "Clear order of precedence favorable to you"],
+    "confidenceRubric": {
+      "explicit": "Contract supersedes all prior negotiations and proposals",
+      "strongParaphrase": "Integration clause excluding your bid terms",
+      "weak": "Documents listed in order of precedence"
+    },
+    "searchQueries": ["order of precedence", "entire agreement clause", "supersedes prior agreements"],
+    "exactPatterns": ["supersedes", "entire agreement", "order of precedence", "integration", "prior negotiations"],
+    "clusterId": "contract-terms"
+  },
+  {
+    "provisionId": "damage-public-property",
+    "priority": "high",
+    "canonicalWording": "Indemnity for damage to sidewalks, roads, curbs",
+    "synonyms": ["damage to public property", "sidewalks", "curbs", "underground structures", "roads"],
+    "definition": "Liability for damage to site surroundings/infrastructure from heavy equipment. Third party should analyze and locate utilities. Do not indemnify GC/owner for this - may get pulled in when not at fault.",
+    "suggestedAction": "Do not indemnify GCs, owners, or other subs for this. Have a third party analyze and locate utilities. Avoid blanket indemnification that pulls you in when you're not at fault.",
+    "falsePositiveTraps": ["Damage to the Work", "Negligence-based damage you caused", "Reasonable repair responsibility"],
+    "confidenceRubric": {
+      "explicit": "Subcontractor liable for all damage to approaches, sidewalks, roads",
+      "strongParaphrase": "Repair of all damage caused by equipment access regardless of fault",
+      "weak": "General property damage"
+    },
+    "searchQueries": ["sidewalk damage liability", "road damage indemnity", "infrastructure damage"],
+    "exactPatterns": ["sidewalk", "curb", "road", "pavement", "concrete", "infrastructure"],
+    "clusterId": "property-liability"
+  },
+  {
+    "provisionId": "crane-cowork-liability",
+    "priority": "high",
+    "canonicalWording": "Crane co-work: setup/takedown or multiple crane companies",
+    "synonyms": ["crane co-work", "multiple cranes", "setup takedown", "crane assist"],
+    "definition": "When multiple crane companies work together (setup/takedown, crane assist), liability must be clearly delineated. Who indemnifies whom? Both should not indemnify the GC with arising-out-of language.",
+    "suggestedAction": "Ensure liability and indemnity are clearly delineated between crane companies. Both parties should not indemnify the GC with arising-out-of language.",
+    "falsePositiveTraps": ["Single crane company", "Clear mutual indemnification", "Separate scopes"],
+    "confidenceRubric": {
+      "explicit": "Multiple crane operations without clear liability separation",
+      "strongParaphrase": "Both crane parties indemnifying GC broadly",
+      "weak": "Reference to other crane contractors"
+    },
+    "searchQueries": ["multiple crane operations", "crane setup takedown", "crane co-work liability"],
+    "exactPatterns": ["setup", "takedown", "assist", "multiple crane", "crane service"],
+    "clusterId": "scope"
+  },
+  {
+    "provisionId": "uslnh-over-water",
+    "priority": "high",
+    "canonicalWording": "Work near/over water requiring USL&H coverage",
+    "synonyms": ["USL&H", "USLNH", "over water", "maritime", "drowning", "waterfront"],
+    "definition": "Work near or over bodies of water creates USL&H exposure on workers compensation. Need USL&H coverage for drowning and maritime exposures. Some inland marine policies exclude over-water claims.",
+    "suggestedAction": "Get USL&H insurance on your workers comp for drowning coverage. Consult your agent for additional coverage concerns.",
+    "falsePositiveTraps": ["Landlocked project", "Small drainage features", "Already have USL&H"],
+    "confidenceRubric": {
+      "explicit": "Work specifically over or adjacent to navigable water",
+      "strongParaphrase": "Waterfront, pier, dock, or maritime work",
+      "weak": "Project near water features"
+    },
+    "searchQueries": ["over water work", "maritime operations", "waterfront construction"],
+    "exactPatterns": ["over water", "waterfront", "pier", "dock", "harbor", "river", "lake", "ocean", "maritime"],
+    "clusterId": "special-exposures"
+  },
+  {
+    "provisionId": "railroad-protective",
+    "priority": "high",
+    "canonicalWording": "Railroad work requiring special coverage",
+    "synonyms": ["railroad", "railroad protective", "rail", "egress", "railroad cars"],
+    "definition": "Work on, over, or adjacent to railroad requires railroad protective insurance. Special endorsements available on GL. Required for lifting/moving railroad cars or crossing rail lines.",
+    "suggestedAction": "Be aware of railroad protective insurance requirements and endorsements available on your GL.",
+    "falsePositiveTraps": ["No railroad near project", "Railroad inactive", "Already have railroad protective"],
+    "confidenceRubric": {
+      "explicit": "Work directly on or over active railroad",
+      "strongParaphrase": "Railroad protective insurance required",
+      "weak": "Project adjacent to rail lines"
+    },
+    "searchQueries": ["railroad protective insurance", "rail operations coverage", "railroad crossing work"],
+    "exactPatterns": ["railroad", "railway", "rail", "railroad protective", "rail car", "train"],
+    "clusterId": "special-exposures"
+  },
+  {
+    "provisionId": "helicopter-operations",
+    "priority": "high",
+    "canonicalWording": "Equipment being helicoptered in",
+    "synonyms": ["helicopter", "aerial lift", "air transport"],
+    "definition": "Equipment being helicoptered in may be excluded from inland marine policies. Special aviation coverage may be needed. Verify coverage before accepting project.",
+    "suggestedAction": "Verify aviation coverage with your agent before accepting the project. Your inland marine policy may exclude helicopter operations.",
+    "falsePositiveTraps": ["Ground transport only", "Standard crane operations", "Already have aviation coverage"],
+    "confidenceRubric": {
+      "explicit": "Equipment specifically transported by helicopter",
+      "strongParaphrase": "Aerial lift or helicopter operations required",
+      "weak": "Remote site access"
+    },
+    "searchQueries": ["helicopter lift operations", "aerial equipment transport", "helicopter construction"],
+    "exactPatterns": ["helicopter", "aerial", "air lift", "aviation"],
+    "clusterId": "special-exposures"
+  },
+  {
+    "provisionId": "waiver-subrogation",
+    "priority": "medium",
+    "canonicalWording": "Waiver of subrogation on WC, GL, Auto",
+    "synonyms": ["waiver of subrogation", "waive rights of recovery", "subrogation waiver"],
+    "definition": "Requirement to waive subrogation rights. Important when bare renting equipment - need waiver from party renting your equipment on GL, excess, auto, and workers comp.",
+    "suggestedAction": "When bare renting equipment, require waiver of subrogation from the renter on GL, excess, auto, and workers comp. Confirm your policy permits waivers.",
+    "falsePositiveTraps": ["Waiver if required by contract", "Permitted by policy", "Mutual waiver"],
+    "confidenceRubric": {
+      "explicit": "Mandatory waiver of subrogation required",
+      "strongParaphrase": "Insurer must waive rights against Contractor",
+      "weak": "Waiver requested"
+    },
+    "searchQueries": ["waiver of subrogation", "waive rights of recovery", "subrogation clause"],
+    "exactPatterns": ["waiver of subrogation", "waive subrogation", "rights of recovery"],
+    "clusterId": "insurance-terms"
+  },
+  {
+    "provisionId": "primary-non-contributory",
+    "priority": "medium",
+    "canonicalWording": "Primary non-contributory on GL/Auto",
+    "synonyms": ["primary and non-contributory", "primary basis", "PNC"],
+    "definition": "Insurance must be primary and non-contributory - your insurance pays first without contribution from others.",
+    "suggestedAction": "Confirm your policy supports primary and non-contributory endorsements. This is a standard request—verify with your agent that your policy can accommodate it.",
+    "falsePositiveTraps": ["Primary only", "Excess over valid collectible", "Contributory permitted"],
+    "confidenceRubric": {
+      "explicit": "Required to be Primary and Non-Contributory",
+      "strongParaphrase": "Your insurance responds first and alone",
+      "weak": "Primary coverage mentioned"
+    },
+    "searchQueries": ["primary non-contributory", "primary basis insurance", "PNC requirement"],
+    "exactPatterns": ["primary and non-contributory", "primary non-contributory", "PNC", "non-contributory"],
+    "clusterId": "insurance-terms"
+  },
+  {
+    "provisionId": "ongoing-operations-ai",
+    "priority": "medium",
+    "canonicalWording": "Ongoing operations additional insured",
+    "synonyms": ["ongoing operations", "additional insured", "auto additional insured", "CG 20 10"],
+    "definition": "Requirement for AI status for ongoing operations. This is generally acceptable unlike completed operations AI.",
+    "suggestedAction": "This is generally acceptable. Verify your policy supports ongoing operations AI endorsements (CG 20 10 or equivalent).",
+    "falsePositiveTraps": ["Completed ops AI (worse)", "General liability only", "Already standard"],
+    "confidenceRubric": {
+      "explicit": "Additional Insured for ongoing operations required",
+      "strongParaphrase": "CG 20 10 or equivalent required",
+      "weak": "Additional insured mentioned"
+    },
+    "searchQueries": ["ongoing operations AI", "additional insured endorsement", "CG 20 10"],
+    "exactPatterns": ["ongoing operations", "additional insured", "CG 20 10", "CG2010"],
+    "clusterId": "additional-insured"
+  },
+  {
+    "provisionId": "per-project-aggregate",
+    "priority": "medium",
+    "canonicalWording": "Per-project aggregate on GL",
+    "synonyms": ["per project aggregate", "general aggregate applies per project", "dedicated project aggregate"],
+    "definition": "General Aggregate limit must apply separately to this project rather than shared across all projects.",
+    "suggestedAction": "Verify your policy has a per-project aggregate endorsement or can add one. Confirm with your agent before agreeing to this requirement.",
+    "falsePositiveTraps": ["Per policy aggregate", "Per location", "Standard aggregate"],
+    "confidenceRubric": {
+      "explicit": "General Aggregate applies per project",
+      "strongParaphrase": "Designated Construction Project General Aggregate endorsement required",
+      "weak": "Aggregate limits mentioned"
+    },
+    "searchQueries": ["per project aggregate", "dedicated aggregate", "project specific limits"],
+    "exactPatterns": ["per project", "per location", "aggregate applies", "designated project"],
+    "clusterId": "insurance-limits"
+  },
+  {
+    "provisionId": "subcontractor-obligations-flowdown",
+    "priority": "medium",
+    "canonicalWording": "Flow-down to sub-subcontractors",
+    "synonyms": ["sub-subcontractors", "lower tier subcontractors", "flow down"],
+    "definition": "Requirements imposed on any subcontractors you hire - they must have same insurance/indemnity obligations.",
+    "suggestedAction": "If you use sub-subcontractors, ensure they carry the same insurance and indemnity obligations. Obtain certificates from your subs that meet the contract requirements.",
+    "falsePositiveTraps": ["No subs allowed", "Approval required only", "Your own employees"],
+    "confidenceRubric": {
+      "explicit": "Subcontractor must bind lower tiers to same terms",
+      "strongParaphrase": "Flow down provisions to all sub-subcontractors",
+      "weak": "Responsibility for subs mentioned"
+    },
+    "searchQueries": ["flow down provisions", "sub-subcontractor requirements", "lower tier obligations"],
+    "exactPatterns": ["sub-subcontractor", "lower tier", "flow down", "bind", "same terms"],
+    "clusterId": "contract-terms"
+  },
+  {
+    "provisionId": "deductible-declarations",
+    "priority": "medium",
+    "canonicalWording": "Deductible/SIR declarations and limits",
+    "synonyms": ["deductible", "self-insured retention", "SIR", "retention"],
+    "definition": "Requirements to declare or limit deductibles/SIRs. OCIP deductibles can be very high and may vary by party.",
+    "suggestedAction": "Disclose your deductibles as required. For OCIP projects, understand the deductible structure and how it applies to your scope before enrolling.",
+    "falsePositiveTraps": ["No deductible mentioned", "Deductible payment responsibility", "Standard deductibles"],
+    "confidenceRubric": {
+      "explicit": "Maximum deductible/SIR specified or OCIP deductible structure",
+      "strongParaphrase": "Must disclose all deductibles",
+      "weak": "Deductibles mentioned"
+    },
+    "searchQueries": ["deductible requirements", "SIR limits", "self-insured retention"],
+    "exactPatterns": ["deductible", "self-insured retention", "SIR", "retention amount"],
+    "clusterId": "insurance-terms"
+  },
+  {
+    "provisionId": "cancellation-notice",
+    "priority": "medium",
+    "canonicalWording": "30-day cancellation notice requirement",
+    "synonyms": ["notice of cancellation", "30 days notice", "endeavor to notify", "cancellation clause"],
+    "definition": "Requirement for 30-day notice of policy cancellation. Often difficult to obtain from carriers.",
+    "suggestedAction": "Confirm with your agent whether your carrier can provide 30-day cancellation notice. This is often difficult to obtain—negotiate for 'endeavor to provide' language if possible.",
+    "falsePositiveTraps": ["Endeavor to provide", "In accordance with policy", "10-day notice standard"],
+    "confidenceRubric": {
+      "explicit": "30 days written notice of cancellation required",
+      "strongParaphrase": "Advance notice required prior to cancellation",
+      "weak": "Standard policy notice provisions"
+    },
+    "searchQueries": ["cancellation notice", "30 days notice", "notice of cancellation"],
+    "exactPatterns": ["30 days", "cancellation", "notice of", "prior to cancellation"],
+    "clusterId": "insurance-terms"
+  },
+  {
+    "provisionId": "scheduled-endorsements",
+    "priority": "medium",
+    "canonicalWording": "Scheduled vs. blanket endorsements",
+    "synonyms": ["scheduled additional insured", "blanket additional insured", "specific endorsement"],
+    "definition": "Requirement for scheduled (named) endorsements vs blanket coverage. Scheduled requires naming specific parties.",
+    "suggestedAction": "Blanket endorsements are preferable as they automatically cover required parties. If scheduled endorsements are required, ensure all parties are correctly named on your policy.",
+    "falsePositiveTraps": ["Blanket allowed", "As required by contract", "Either acceptable"],
+    "confidenceRubric": {
+      "explicit": "Must provide scheduled endorsements naming specific parties",
+      "strongParaphrase": "Specific endorsement forms required",
+      "weak": "Additional insured required"
+    },
+    "searchQueries": ["scheduled endorsement", "blanket additional insured", "named endorsement"],
+    "exactPatterns": ["scheduled", "blanket", "specific endorsement", "named"],
+    "clusterId": "insurance-terms"
+  },
+  {
+    "provisionId": "broad-indemnity",
+    "priority": "medium",
+    "canonicalWording": "Indemnity \"to fullest extent permitted by law\"",
+    "synonyms": ["fullest extent permitted by law", "broad form indemnity", "maximum indemnity"],
+    "definition": "Indemnity clause stretching to the legal limit. Often saves you from indemnifying for sole negligence in anti-indemnity states.",
+    "suggestedAction": "This clause may actually protect you in anti-indemnity states by limiting indemnity to what's legally permitted. Consult your attorney to understand how state law affects this provision.",
+    "falsePositiveTraps": ["Limited indemnity", "Negligence only", "Comparative fault"],
+    "confidenceRubric": {
+      "explicit": "Indemnify to the fullest extent permitted by law",
+      "strongParaphrase": "Broad form indemnification",
+      "weak": "Indemnity mentioned"
+    },
+    "searchQueries": ["fullest extent permitted by law", "broad indemnity", "maximum indemnification"],
+    "exactPatterns": ["fullest extent", "permitted by law", "broad form", "maximum extent"],
+    "clusterId": "indemnity"
+  },
+  {
+    "provisionId": "osip-riggers-exclusion",
+    "priority": "medium",
+    "canonicalWording": "OCIP excluding riggers liability coverage",
+    "synonyms": ["OCIP riggers exclusion", "riggers liability not covered", "OCIP coverage gap"],
+    "definition": "Many OCIPs do not include riggers liability coverage - they rely on your riggers liability. Understand that you may be providing this coverage even when enrolled in OCIP.",
+    "suggestedAction": "Verify whether the OCIP includes riggers liability coverage. You may need to provide this coverage from your own policy even when enrolled in the OCIP.",
+    "falsePositiveTraps": ["OCIP includes riggers", "Full coverage OCIP", "No rigging work"],
+    "confidenceRubric": {
+      "explicit": "OCIP specifically excludes riggers liability",
+      "strongParaphrase": "Subcontractor responsible for own riggers liability under OCIP",
+      "weak": "OCIP coverage details not clear"
+    },
+    "searchQueries": ["OCIP riggers liability", "riggers coverage exclusion", "OCIP coverage gaps"],
+    "exactPatterns": ["riggers liability", "riggers coverage", "rigging coverage", "excluded from OCIP"],
+    "clusterId": "insurance-programs"
+  },
+  {
+    "provisionId": "osip-limit-adequacy",
+    "priority": "medium",
+    "canonicalWording": "OCIP limit adequacy for project size",
+    "synonyms": ["OCIP limits", "wrap-up limits", "shared limits"],
+    "definition": "OCIP limits may be inadequate for project size. $50M for 500+ condos shared with 100 subs may not be enough. You may have more coverage on your own policies.",
+    "suggestedAction": "Compare OCIP limits to your own policies. Consider whether shared limits are adequate for the project size and number of enrolled parties.",
+    "falsePositiveTraps": ["Adequate limits", "Large limits provided", "You have less coverage anyway"],
+    "confidenceRubric": {
+      "explicit": "OCIP limits appear insufficient for project scope",
+      "strongParaphrase": "Shared limits inadequate for number of parties",
+      "weak": "OCIP limits mentioned"
+    },
+    "searchQueries": ["OCIP limit adequacy", "wrap-up insurance limits", "shared limit concerns"],
+    "exactPatterns": ["ocip limit", "wrap-up limit", "aggregate", "shared"],
+    "clusterId": "insurance-programs"
+  },
+  {
+    "provisionId": "osip-deductible-high",
+    "priority": "medium",
+    "canonicalWording": "High OCIP deductibles disproportionate to work",
+    "synonyms": ["OCIP deductible", "wrap-up deductible", "project deductible"],
+    "definition": "OCIP deductibles can be very high ($100K+). For small projects ($10K of work), this creates disproportionate risk. Understand how deductibles are allocated.",
+    "suggestedAction": "Understand the deductible amounts and structure before enrolling. Avoid OCIPs where the deductible is disproportionate to your project value/profit.",
+    "falsePositiveTraps": ["Reasonable deductible", "Deductible proportional", "Large project value"],
+    "confidenceRubric": {
+      "explicit": "High OCIP deductible relative to contract value",
+      "strongParaphrase": "Deductible structure unfavorable for small scope",
+      "weak": "OCIP deductible mentioned"
+    },
+    "searchQueries": ["OCIP deductible amount", "wrap-up deductible structure", "project insurance deductible"],
+    "exactPatterns": ["deductible", "self-insured", "SIR", "first dollar"],
+    "clusterId": "insurance-programs"
+  },
+  {
+    "provisionId": "ocip-eligibility",
+    "priority": "low",
+    "canonicalWording": "OCIP eligibility not guaranteed for crane/rigging",
+    "synonyms": ["OCIP eligibility", "excluded from OCIP", "wrap-up eligibility"],
+    "definition": "Crane/rigging excluded from OCIP approximately 1 in 3 times. Heavy haul almost always excluded (material transport only). Always verify eligibility with OCIP administrator before enrollment.",
+    "suggestedAction": "Always verify eligibility with the OCIP administrator before enrollment. Crane/rigging is excluded ~1 in 3 times; heavy haul is almost always excluded.",
+    "falsePositiveTraps": ["Mandatory enrollment", "Automatic coverage", "Confirmed eligibility"],
+    "confidenceRubric": {
+      "explicit": "Crane/Rigging specifically excluded from OCIP",
+      "strongParaphrase": "Eligibility subject to OCIP administrator approval",
+      "weak": "OCIP participation mentioned"
+    },
+    "searchQueries": ["OCIP eligibility crane", "wrap-up enrollment requirements", "OCIP exclusions"],
+    "exactPatterns": ["eligible", "eligibility", "excluded", "enrollment", "OCIP", "CCIP"],
+    "clusterId": "insurance-programs"
+  },
+  {
+    "provisionId": "bid-net-insurance",
+    "priority": "low",
+    "canonicalWording": "Bidding with or net of insurance costs",
+    "synonyms": ["bid net", "insurance credit", "deduct insurance cost", "gross vs net bid"],
+    "definition": "Requirement to exclude insurance costs from bid for OCIP. Understand how insurance rates factor into pricing and audit process.",
+    "suggestedAction": "Understand how to calculate and deduct insurance costs from your bid. Work with your agent to determine accurate insurance rates for OCIP pricing.",
+    "falsePositiveTraps": ["Gross bid", "Include all costs", "No OCIP"],
+    "confidenceRubric": {
+      "explicit": "Bid shall be net of insurance costs",
+      "strongParaphrase": "Deduct insurance premiums from price",
+      "weak": "OCIP credits mentioned"
+    },
+    "searchQueries": ["bid net of insurance", "OCIP pricing", "insurance deduction bid"],
+    "exactPatterns": ["net of insurance", "bid net", "insurance credit", "deduct insurance"],
+    "clusterId": "insurance-programs"
+  },
+  {
+    "provisionId": "admin-burden",
+    "priority": "low",
+    "canonicalWording": "OCIP administrative burden (5-8 hours)",
+    "synonyms": ["administrative requirements", "reporting requirements", "OCIP paperwork"],
+    "definition": "OCIP enrollment causes 5-8 hours additional administration. Consider adding ~$500 to bid for OCIP administrative costs.",
+    "suggestedAction": "Add approximately $500 to your bid to recoup administrative costs when participating in an OCIP.",
+    "falsePositiveTraps": ["Standard reporting", "Daily logs", "Simple enrollment"],
+    "confidenceRubric": {
+      "explicit": "Extensive OCIP reporting requirements",
+      "strongParaphrase": "Payroll reporting and enrollment burden",
+      "weak": "Submit reports"
+    },
+    "searchQueries": ["OCIP administrative requirements", "wrap-up reporting", "enrollment paperwork"],
+    "exactPatterns": ["payroll reporting", "enrollment", "administrative", "documentation"],
+    "clusterId": "insurance-programs"
+  },
+  {
+    "provisionId": "builders-risk-exclusions",
+    "priority": "low",
+    "canonicalWording": "Builders risk coverage and exclusions",
+    "synonyms": ["builders risk", "property insurance", "course of construction", "BR coverage"],
+    "definition": "Terms regarding Builders Risk coverage. GCs may claim BR covers hoisted property, but BR often excludes contractor equipment (man lifts, etc.) that you may be rigging.",
+    "suggestedAction": "Do not assume Builder's Risk covers property you are rigging. Verify BR policy exclusions—contractor equipment is often excluded. Clarify coverage responsibility before the lift.",
+    "falsePositiveTraps": ["Contractor provides BR", "You provide BR", "Full coverage BR"],
+    "confidenceRubric": {
+      "explicit": "Builders Risk policy details/exclusions specified",
+      "strongParaphrase": "Subcontractor responsible for BR deductible",
+      "weak": "Property insurance mentioned"
+    },
+    "searchQueries": ["builders risk coverage", "course of construction insurance", "BR exclusions"],
+    "exactPatterns": ["builders risk", "builder's risk", "course of construction", "property insurance"],
+    "clusterId": "property-liability"
+  },
+  {
+    "provisionId": "cross-suits",
+    "priority": "low",
+    "canonicalWording": "Cross suits / separation of insureds",
+    "synonyms": ["cross liability", "separation of insureds", "cross suits exclusion", "insured vs insured"],
+    "definition": "In OCIP, cross suits exclusion means enrolled parties cannot sue each other through the OCIP. If you are outside the OCIP, all enrolled parties can sue you.",
+    "suggestedAction": "Understand cross-suits implications before declining OCIP enrollment. If you are outside the OCIP, all enrolled parties can pursue claims against you through the OCIP.",
+    "falsePositiveTraps": ["Cross suits exclusion removed (good)", "Standard separation of insureds", "Not in OCIP"],
+    "confidenceRubric": {
+      "explicit": "Cross suits exclusion or separation of insureds provision",
+      "strongParaphrase": "Parties enrolled cannot pursue claims against each other",
+      "weak": "Insured vs Insured mentioned"
+    },
+    "searchQueries": ["cross suits exclusion", "separation of insureds", "cross liability"],
+    "exactPatterns": ["cross suits", "cross liability", "separation of insureds", "insured vs insured"],
+    "clusterId": "insurance-programs"
+  },
+  {
+    "provisionId": "bill-of-lading-terms",
+    "priority": "low",
+    "canonicalWording": "Bill of lading / cargo responsibility terms",
+    "synonyms": ["bill of lading", "cargo", "freight", "loading unloading", "transport responsibility"],
+    "definition": "For heavy haul, understand bill of lading terms for when you are responsible for property during loading, unloading, or transport.",
+    "suggestedAction": "Review and understand bill of lading terms for cargo responsibility during loading, unloading, and transport. Clarify when liability transfers.",
+    "falsePositiveTraps": ["No transport", "Customer loads/unloads", "Clear responsibility"],
+    "confidenceRubric": {
+      "explicit": "Bill of lading terms allocating risk",
+      "strongParaphrase": "Cargo responsibility during loading/unloading/transport",
+      "weak": "Freight or cargo mentioned"
+    },
+    "searchQueries": ["bill of lading terms", "cargo responsibility", "freight liability"],
+    "exactPatterns": ["bill of lading", "cargo", "freight", "loading", "unloading", "transport"],
+    "clusterId": "property-liability"
+  }
+]

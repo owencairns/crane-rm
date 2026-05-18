@@ -21,7 +21,7 @@ echo "=== Building backend ==="
 npm run build
 
 echo "=== Building Docker image ==="
-docker build -t "$IMAGE:$TAG" -t "$IMAGE:latest" .
+docker build --platform linux/amd64 -t "$IMAGE:$TAG" -t "$IMAGE:latest" .
 
 echo "=== Pushing to Container Registry ==="
 docker push "$IMAGE:$TAG"
@@ -40,8 +40,8 @@ gcloud run deploy certmaster-crane-backend \
   --min-instances=0 \
   --concurrency=10 \
   --no-cpu-throttling \
-  --set-env-vars=NODE_ENV=production \
-  --set-secrets=OPENAI_API_KEY=openai-api-key:latest,FIREBASE_PRIVATE_KEY=firebase-private-key:latest
+  --set-env-vars=NODE_ENV=production,FIREBASE_PROJECT_ID=fir-demo-a3af0,FIREBASE_CLIENT_EMAIL=firebase-adminsdk-fper1@fir-demo-a3af0.iam.gserviceaccount.com,FIREBASE_STORAGE_BUCKET=fir-demo-a3af0.firebasestorage.app,PINECONE_INDEX_NAME=crane-contract-review \
+  --set-secrets=OPENAI_API_KEY=openai-api-key:latest,FIREBASE_PRIVATE_KEY=firebase-private-key:latest,PINECONE_API_KEY=pinecone-api-key:latest,GOOGLE_GENERATIVE_AI_API_KEY=google-ai-api-key:latest
 
 echo "=== Deployment complete ==="
 gcloud run services describe certmaster-crane-backend --region=us-central1 --format='value(status.url)'

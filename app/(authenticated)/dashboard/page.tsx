@@ -1,9 +1,20 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
+import { useAction, useMutation, useQuery } from "convex/react"
+import type { Id } from "@/convex/_generated/dataModel"
 import { UploadZone } from "@/components/workspace/upload-zone"
 import { ContractList, Contract } from "@/components/workspace/contract-grid"
-import { Search, LayoutGrid, List as ListIcon, ArrowUpDown, Play, Loader2, CheckCircle2, XCircle } from "lucide-react"
+import {
+  Search,
+  LayoutGrid,
+  List as ListIcon,
+  ArrowUpDown,
+  Play,
+  Loader2,
+  CheckCircle2,
+  XCircle,
+} from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import {
@@ -16,12 +27,8 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { backendApi } from "@/lib/backend-api"
 import { toast } from "sonner"
-import { storage, db } from "@/lib/firebase"
-import { ref, uploadBytes } from "firebase/storage"
-import { doc, onSnapshot, collection, query, where } from "firebase/firestore"
-import { auth } from "@/lib/firebase"
+import { api } from "@/convex/_generated/api"
 
 type SortOption = "date" | "name"
 
@@ -29,302 +36,215 @@ interface UploadedContract {
   id: string
   name: string
   file: File
-  storagePath: string
-  status: "uploaded" | "ready-to-analyze"
+  uploadUrl: string
 }
 
 interface ProcessingContract {
   id: string
   name: string
-  status: string // Any status that's not "complete" or "failed"
+  status: string
   progress?: string
 }
 
 export default function WorkspacePage() {
-  const [contracts, setContracts] = useState<Contract[]>([])
+  const contractsQuery = useQuery(api.contracts.list)
+  const requestUpload = useMutation(api.contracts.requestUpload)
+  const startProcessing = useMutation(api.contracts.startProcessing)
+  const deleteContract = useAction(api.contractNode.deleteContract)
+  const reprocessContract = useMutation(api.contracts.reprocessContract)
+
   const [uploadedContracts, setUploadedContracts] = useState<UploadedContract[]>([])
-  const [processingContracts, setProcessingContracts] = useState<ProcessingContract[]>([])
+  const [localProcessing, setLocalProcessing] = useState<ProcessingContract[]>([])
   const [search, setSearch] = useState("")
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
   const [sortBy, setSortBy] = useState<SortOption>("date")
-  const [loading, setLoading] = useState(true)
 
-  // Set up real-time listener for ALL contracts
-  useEffect(() => {
-    const userId = auth.currentUser?.uid
-    if (!userId) {
-      setLoading(false)
-      return
-    }
+  const contracts = contractsQuery ?? []
+  const loading = contractsQuery === undefined
 
-    // Subscribe to all user contracts
-    const contractsRef = collection(db, "contracts")
-    const q = query(contractsRef, where("userId", "==", userId))
+  const serverProcessing: ProcessingContract[] = contracts
+    .filter((contract) =>
+      ["uploaded", "parsing", "analyzing"].includes(contract.status)
+    )
+    .map((contract) => ({
+      id: contract.id,
+      name: contract.name,
+      status: contract.status,
+      progress: getStatusMessage(contract.status),
+    }))
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const processing: ProcessingContract[] = []
-      const completed: Contract[] = []
-      const uploaded: UploadedContract[] = []
+  const historyContracts = contracts.filter(
+    (contract) => contract.status === "complete" || contract.status === "failed"
+  )
 
-      snapshot.docs.forEach((doc) => {
-        const data = doc.data()
-        const status = data.status
+  const serverIds = new Set([
+    ...serverProcessing.map((contract) => contract.id),
+    ...historyContracts.map((contract) => contract.id),
+  ])
 
-        // 1. Handle "Ready to Analyze" (uploaded)
-        if (status === "uploaded") {
-          // We need to reconstruct the UploadedContract object
-          // Note: We won't have the File object here if it was loaded from server
-          // This might be a limitation if we need the File object for re-upload
-          // But for now, we just display them.
-          // If we need to restart analysis, we might need to re-download or handle differently.
-          // For this fix, we'll focus on the status display.
-          
-          // Check if we already have this in local uploadedContracts state to preserve File object if possible
-          // This part is tricky because onSnapshot replaces everything.
-          // We'll rely on the fact that "uploaded" means it's in the "Ready to Analyze" bucket.
-          
-          // Actually, for "uploaded" status from server, we should add it to uploadedContracts
-          // But we can't easily reconstruct the File object.
-          // However, the existing code seemed to rely on local state for File object for "handleStartAnalysis".
-          // Let's keep the existing "uploadedContracts" state for locally added files, 
-          // AND sync with server for persistence if needed. 
-          // BUT the user issue is about "Double Status".
-          // "uploaded" status on server = "Ready to Analyze".
-          // "processing" status = "parsed", "embedded", "analyzing".
-          
-          // So, if status is "uploaded", it is NOT processing.
-        }
+  const processingContracts = [
+    ...localProcessing.filter((contract) => !serverIds.has(contract.id)),
+    ...serverProcessing,
+  ]
 
-        // 2. Handle Processing
-        // Processing statuses: "parsed", "embedded", "analyzing"
-        // EXCLUDING "uploaded" which is "Ready to Analyze"
-        const isProcessing = status === "parsed" || status === "embedded" || status === "analyzing"
-
-        if (isProcessing) {
-          processing.push({
-            id: doc.id,
-            name: data.filename || data.fileName || "Unknown",
-            status: status,
-            progress: getStatusMessage(status)
-          })
-        }
-
-        // 3. Handle Completed/History
-        if (status === "complete" || status === "failed") {
-           completed.push({
-             id: doc.id,
-             name: data.filename || data.fileName || "Unknown",
-             client: data.client || "Unknown", // Add default or fetch if available
-             date: data.date || new Date().toISOString(), // Add default or fetch
-             status: status as "complete" | "failed",
-             riskScore: data.riskScore
-           })
-        }
-
-        // Check for newly completed contracts and notify
-        // We can check if it WAS in our local processing state
-        if (status === "complete") {
-           // We can't easily check 'processingContracts' state here due to closure
-           // But we can check if we just received it as complete.
-           // Ideally we'd compare with previous state, but for now let's just update the lists.
-        }
-      })
-
-      // Update History
-      setContracts(completed)
-
-      // Update Processing
-      // We need to MERGE with local processing states (like "uploading", "chunking")
-      // which are NOT yet on the server or are transient.
-      setProcessingContracts(prev => {
-        // Keep local-only states
-        const localProcessing = prev.filter(p => 
-          p.status === "uploading" || 
-          p.status === "chunking" || 
-          p.status === "upload_complete" // New intermediate state
-        )
-        
-        // Combine local and server
-        // If an ID exists in both, server wins (unless it's 'uploaded' which we filtered out above, 
-        // but we want to avoid showing 'uploaded' as processing if server says so)
-        
-        // Actually, if server says "uploaded", we ignore it for processing list.
-        // If server says "parsed", we show it.
-        
-        // We also need to remove items from localProcessing if they are now in server processing or completed
-        const serverIds = new Set([...processing.map(p => p.id), ...completed.map(c => c.id)])
-        const filteredLocal = localProcessing.filter(p => !serverIds.has(p.id))
-        
-        return [...filteredLocal, ...processing]
-      })
-      
-      setLoading(false)
-    })
-
-    return () => {
-      unsubscribe()
-    }
-  }, [])
-
-  const getStatusMessage = (status: string): string => {
-    switch (status) {
-      case "uploading": return "Uploading file..."
-      case "upload_complete": return "Upload complete..."
-      case "chunking": return "Processing document..."
-      case "uploaded": return "Ready to analyze" // Should not appear in processing usually
-      case "parsed": return "Generating embeddings..."
-      case "embedded": return "Starting analysis..."
-      case "analyzing": return "Analyzing contract provisions..."
-      case "complete": return "Analysis complete"
-      case "failed": return "Processing failed"
-      default: return `Processing (${status})...`
-    }
-  }
-
-  // Removed loadContracts and loadProcessingContracts as they are redundant with onSnapshot
-
-  const handleUpload = async (file: File) => {
+  async function handleUpload(file: File) {
     try {
-      // Request upload metadata
-      const { contractId, storagePath } = await backendApi.requestUpload(
-        file.name,
-        file.type
-      )
+      const response = await requestUpload({
+        fileName: file.name,
+        contentType: file.type,
+      })
 
-      // Add to uploaded contracts list
-      setUploadedContracts(prev => [
-        ...prev,
+      setUploadedContracts((current) => [
+        ...current,
         {
-          id: contractId,
+          id: response.contractId,
           name: file.name,
           file,
-          storagePath,
-          status: "uploaded"
-        }
+          uploadUrl: response.uploadUrl,
+        },
       ])
 
-      toast.success("File ready! Click 'Start Analysis' to begin processing.")
-    } catch (error: any) {
+      toast.success("File ready. Click Start Analysis to upload and process it.")
+    } catch (error) {
       console.error("Error preparing upload:", error)
       toast.error(error instanceof Error ? error.message : "Failed to prepare upload")
     }
   }
 
-  const handleStartAnalysis = async (uploadedContract: UploadedContract) => {
+  async function handleStartAnalysis(uploadedContract: UploadedContract) {
     try {
-      // Move to processing section
-      setUploadedContracts(prev => prev.filter(c => c.id !== uploadedContract.id))
-      setProcessingContracts(prev => [
-        ...prev,
+      setUploadedContracts((current) => current.filter((contract) => contract.id !== uploadedContract.id))
+      setLocalProcessing((current) => [
+        ...current,
         {
           id: uploadedContract.id,
           name: uploadedContract.name,
           status: "uploading",
-          progress: "Uploading file..."
-        }
+          progress: "Uploading file...",
+        },
       ])
 
-      // Upload file to Firebase Storage using the storagePath from backend
-      const storageRef = ref(storage, uploadedContract.storagePath)
-      await uploadBytes(storageRef, uploadedContract.file, {
-        contentType: uploadedContract.file.type,
+      const uploadResponse = await fetch(uploadedContract.uploadUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": uploadedContract.file.type || "application/pdf",
+        },
+        body: uploadedContract.file,
       })
 
-      // Update status - Use "upload_complete" to avoid "uploaded" conflict
-      setProcessingContracts(prev =>
-        prev.map(c => c.id === uploadedContract.id
-          ? { ...c, status: "upload_complete", progress: "File uploaded" }
-          : c
+      if (!uploadResponse.ok) {
+        throw new Error("Failed to upload file to Convex storage")
+      }
+
+      const { storageId } = await uploadResponse.json()
+
+      setLocalProcessing((current) =>
+        current.map((contract) =>
+          contract.id === uploadedContract.id
+            ? { ...contract, status: "upload_complete", progress: "Upload complete..." }
+            : contract
         )
       )
 
-      // Confirm upload
-      await backendApi.confirmUpload(uploadedContract.id)
-
-      // Ingest contract
-      setProcessingContracts(prev =>
-        prev.map(c => c.id === uploadedContract.id
-          ? { ...c, status: "chunking", progress: "Processing document..." }
-          : c
+      setLocalProcessing((current) =>
+        current.map((contract) =>
+          contract.id === uploadedContract.id
+            ? { ...contract, status: "chunking", progress: "Queueing document processing..." }
+            : contract
         )
       )
 
-      await backendApi.ingestContract(uploadedContract.id)
-
-      // The real-time listener will handle the rest
-    } catch (error: any) {
+      await startProcessing({
+        contractId: uploadedContract.id as Id<"contracts">,
+        storageId: storageId as Id<"_storage">,
+      })
+    } catch (error) {
       console.error("Error starting analysis:", error)
       toast.error(error instanceof Error ? error.message : "Failed to start analysis")
-      setProcessingContracts(prev =>
-        prev.map(c => c.id === uploadedContract.id
-          ? { ...c, status: "failed", progress: "Failed" }
-          : c
+      setLocalProcessing((current) =>
+        current.map((contract) =>
+          contract.id === uploadedContract.id
+            ? { ...contract, status: "failed", progress: "Failed" }
+            : contract
         )
       )
     }
   }
 
-  const handleRemoveUploaded = (contractId: string) => {
-    setUploadedContracts(prev => prev.filter(c => c.id !== contractId))
+  function handleRemoveUploaded(contractId: string) {
+    setUploadedContracts((current) => current.filter((contract) => contract.id !== contractId))
   }
 
-  const handleDelete = async (contractId: string) => {
+  async function handleDelete(contractId: string) {
     try {
-      await backendApi.deleteContract(contractId)
+      await deleteContract({
+        contractId: contractId as Id<"contracts">,
+      })
       toast.success("Contract deleted successfully")
-      // Remove from local state
-      setContracts(prev => prev.filter(c => c.id !== contractId))
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error deleting contract:", error)
       toast.error(error instanceof Error ? error.message : "Failed to delete contract")
     }
   }
 
-  const sortedContracts = [...contracts].sort((a, b) => {
-    if (sortBy === "date") {
-      const dateA = new Date(a.date).getTime()
-      const dateB = new Date(b.date).getTime()
-      return dateB - dateA
+  async function handleReprocess(contractId: string) {
+    try {
+      await reprocessContract({ contractId: contractId as Id<"contracts"> })
+      toast.success("Contract queued for reprocessing")
+    } catch (error) {
+      console.error("Error reprocessing contract:", error)
+      toast.error(error instanceof Error ? error.message : "Failed to reprocess contract")
     }
-    if (sortBy === "name") return a.name.localeCompare(b.name)
-    return 0
+  }
+
+  const sortedContracts = [...historyContracts].sort((left, right) => {
+    if (sortBy === "date") {
+      return new Date(right.date).getTime() - new Date(left.date).getTime()
+    }
+    return left.name.localeCompare(right.name)
   })
 
-  const filteredContracts = sortedContracts.filter(c =>
-    c.name.toLowerCase().includes(search.toLowerCase())
+  const filteredContracts = sortedContracts.filter((contract) =>
+    contract.name.toLowerCase().includes(search.toLowerCase())
   )
 
   if (loading) {
     return (
-      <div className="bg-muted/30 p-6 sm:p-8">
-        <div className="max-w-7xl mx-auto space-y-8">
+      <div className="bg-muted/30 p-6 sm:p-8 min-h-full">
+        <div className="max-w-7xl mx-auto space-y-8 animate-fade-in">
           <div className="space-y-6">
             <div className="space-y-2">
               <h1 className="text-3xl font-bold tracking-tight text-foreground">Contract Analysis</h1>
-              <p className="text-muted-foreground">Upload and analyze your crane service contracts for risk assessment.</p>
+              <p className="text-muted-foreground">
+                Upload and analyze your crane service contracts for risk assessment.
+              </p>
             </div>
           </div>
-          <div className="text-center text-muted-foreground">Loading contracts...</div>
+          <div className="text-center text-muted-foreground py-12">Loading contracts...</div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="bg-muted/30 p-6 sm:p-8">
-      <div className="max-w-7xl mx-auto space-y-8">
-
-        {/* Header Section */}
+    <div className="bg-muted/30 p-6 sm:p-8 min-h-full">
+      <div className="max-w-7xl mx-auto space-y-8 animate-fade-in">
         <div className="space-y-6">
           <div className="space-y-2">
             <h1 className="text-3xl font-bold tracking-tight text-foreground">Contract Analysis</h1>
-            <p className="text-muted-foreground">Upload and analyze your crane service contracts for risk assessment.</p>
+            <p className="text-muted-foreground">
+              Upload and analyze your crane service contracts for risk assessment.
+            </p>
           </div>
 
-          <UploadZone onUpload={handleUpload} isCompact={contracts.length > 0 || uploadedContracts.length > 0 || processingContracts.length > 0} />
+          <UploadZone
+            onUpload={handleUpload}
+            isCompact={
+              historyContracts.length > 0 || uploadedContracts.length > 0 || processingContracts.length > 0
+            }
+          />
         </div>
 
-        {/* Uploaded Contracts - Ready to Analyze */}
         {uploadedContracts.length > 0 && (
           <div className="space-y-4">
             <div className="flex items-center gap-2">
@@ -341,22 +261,14 @@ export default function WorkspacePage() {
                       </div>
                       <div>
                         <h3 className="font-semibold">{contract.name}</h3>
-                        <p className="text-sm text-muted-foreground">File uploaded and ready</p>
+                        <p className="text-sm text-muted-foreground">File selected and ready</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleRemoveUploaded(contract.id)}
-                      >
+                      <Button variant="ghost" size="sm" onClick={() => handleRemoveUploaded(contract.id)}>
                         Remove
                       </Button>
-                      <Button
-                        size="sm"
-                        onClick={() => handleStartAnalysis(contract)}
-                        className="gap-2"
-                      >
+                      <Button size="sm" onClick={() => handleStartAnalysis(contract)} className="gap-2">
                         <Play className="h-4 w-4" />
                         Start Analysis
                       </Button>
@@ -368,7 +280,6 @@ export default function WorkspacePage() {
           </div>
         )}
 
-        {/* Processing Contracts */}
         {processingContracts.length > 0 && (
           <div className="space-y-4">
             <div className="flex items-center gap-2">
@@ -380,11 +291,15 @@ export default function WorkspacePage() {
                 <Card key={contract.id} className="p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4 flex-1">
-                      <div className={`p-2 rounded-lg ${
-                        contract.status === "complete" ? "bg-green-500/10 text-green-600" :
-                        contract.status === "failed" ? "bg-red-500/10 text-red-600" :
-                        "bg-blue-500/10 text-blue-600"
-                      }`}>
+                      <div
+                        className={`p-2 rounded-lg ${
+                          contract.status === "complete"
+                            ? "bg-green-500/10 text-green-600"
+                            : contract.status === "failed"
+                              ? "bg-red-500/10 text-red-600"
+                              : "bg-blue-500/10 text-blue-600"
+                        }`}
+                      >
                         {contract.status === "complete" ? (
                           <CheckCircle2 className="h-5 w-5" />
                         ) : contract.status === "failed" ? (
@@ -395,17 +310,25 @@ export default function WorkspacePage() {
                       </div>
                       <div className="flex-1">
                         <h3 className="font-semibold">{contract.name}</h3>
-                        <p className="text-sm text-muted-foreground">{contract.progress || getStatusMessage(contract.status)}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {contract.progress || getStatusMessage(contract.status)}
+                        </p>
                       </div>
                     </div>
-                    <Badge variant={
-                      contract.status === "complete" ? "default" :
-                      contract.status === "failed" ? "destructive" :
-                      "secondary"
-                    }>
-                      {contract.status === "complete" ? "Complete" :
-                       contract.status === "failed" ? "Failed" :
-                       "Processing"}
+                    <Badge
+                      variant={
+                        contract.status === "complete"
+                          ? "default"
+                          : contract.status === "failed"
+                            ? "destructive"
+                            : "secondary"
+                      }
+                    >
+                      {contract.status === "complete"
+                        ? "Complete"
+                        : contract.status === "failed"
+                          ? "Failed"
+                          : "Processing"}
                     </Badge>
                   </div>
                 </Card>
@@ -414,16 +337,14 @@ export default function WorkspacePage() {
           </div>
         )}
 
-        {/* History Section */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <h2 className="text-xl font-semibold">History</h2>
-              <Badge variant="secondary">{contracts.length}</Badge>
+              <Badge variant="secondary">{historyContracts.length}</Badge>
             </div>
           </div>
 
-          {/* Controls Bar */}
           <div className="flex flex-col sm:flex-row gap-4 items-center justify-between bg-background p-3 rounded-xl border border-border/60 shadow-sm">
             <div className="relative flex-1 w-full sm:max-w-md">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -431,7 +352,7 @@ export default function WorkspacePage() {
                 placeholder="Search contracts..."
                 className="pl-9 border-0 focus-visible:ring-0 bg-transparent h-9"
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(event) => setSearch(event.target.value)}
               />
             </div>
 
@@ -442,18 +363,15 @@ export default function WorkspacePage() {
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground hover:text-foreground">
                     <ArrowUpDown className="h-4 w-4" />
-                    <span className="hidden sm:inline">Sort:</span> {sortBy.charAt(0).toUpperCase() + sortBy.slice(1)}
+                    <span className="hidden sm:inline">Sort:</span>{" "}
+                    {sortBy.charAt(0).toUpperCase() + sortBy.slice(1)}
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
                   <DropdownMenuLabel>Sort By</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => setSortBy("date")}>
-                    Date (Newest)
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setSortBy("name")}>
-                    Name (A-Z)
-                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setSortBy("date")}>Date (Newest)</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setSortBy("name")}>Name (A-Z)</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
 
@@ -461,7 +379,11 @@ export default function WorkspacePage() {
                 <Button
                   variant={viewMode === "grid" ? "default" : "ghost"}
                   size="icon"
-                  className={viewMode === "grid" ? "h-7 w-7 shadow-sm" : "h-7 w-7 text-muted-foreground hover:text-foreground"}
+                  className={
+                    viewMode === "grid"
+                      ? "h-7 w-7 shadow-sm"
+                      : "h-7 w-7 text-muted-foreground hover:text-foreground"
+                  }
                   onClick={() => setViewMode("grid")}
                 >
                   <LayoutGrid className="h-4 w-4" />
@@ -469,7 +391,11 @@ export default function WorkspacePage() {
                 <Button
                   variant={viewMode === "list" ? "default" : "ghost"}
                   size="icon"
-                  className={viewMode === "list" ? "h-7 w-7 shadow-sm" : "h-7 w-7 text-muted-foreground hover:text-foreground"}
+                  className={
+                    viewMode === "list"
+                      ? "h-7 w-7 shadow-sm"
+                      : "h-7 w-7 text-muted-foreground hover:text-foreground"
+                  }
                   onClick={() => setViewMode("list")}
                 >
                   <ListIcon className="h-4 w-4" />
@@ -478,18 +404,47 @@ export default function WorkspacePage() {
             </div>
           </div>
 
-          {/* Contract List */}
           <div>
             {filteredContracts.length === 0 ? (
               <div className="text-center text-muted-foreground py-12">
-                {contracts.length === 0 ? "No completed analyses yet. Upload a contract to get started!" : "No contracts match your search."}
+                {historyContracts.length === 0
+                  ? "No completed analyses yet. Upload a contract to get started!"
+                  : "No contracts match your search."}
               </div>
             ) : (
-              <ContractList contracts={filteredContracts} viewMode={viewMode} onDelete={handleDelete} />
+              <ContractList
+                contracts={filteredContracts as Contract[]}
+                viewMode={viewMode}
+                onDelete={handleDelete}
+                onReprocess={handleReprocess}
+              />
             )}
           </div>
         </div>
       </div>
     </div>
   )
+}
+
+function getStatusMessage(status: string): string {
+  switch (status) {
+    case "uploading":
+      return "Uploading file..."
+    case "upload_complete":
+      return "Upload complete..."
+    case "chunking":
+      return "Queueing document processing..."
+    case "uploaded":
+      return "Document uploaded. Starting OCR..."
+    case "parsing":
+      return "Extracting text, tables, and images via OCR..."
+    case "analyzing":
+      return "Analyzing contract provisions..."
+    case "complete":
+      return "Analysis complete"
+    case "failed":
+      return "Processing failed"
+    default:
+      return `Processing (${status})...`
+  }
 }

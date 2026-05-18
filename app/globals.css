@@ -1,32 +1,33 @@
 @import "tailwindcss";
 
 @theme {
-  --color-border: hsl(214 32% 91%);
-  --color-input: hsl(214 32% 91%);
-  --color-ring: hsl(221 83% 53%);
-  --color-background: hsl(210 20% 98%);
-  --color-foreground: hsl(222 47% 11%);
+  /* Brand palette — derived from Red Cedar logo (#005A7A teal, #52632D olive) */
+  --color-border: hsl(200 15% 89%);
+  --color-input: hsl(200 15% 89%);
+  --color-ring: hsl(197 82% 36%);
+  --color-background: hsl(0 0% 100%);
+  --color-foreground: hsl(200 25% 12%);
 
-  --color-primary: hsl(221 83% 53%);
-  --color-primary-foreground: hsl(210 40% 98%);
+  --color-primary: hsl(197 82% 36%);
+  --color-primary-foreground: hsl(0 0% 100%);
 
-  --color-secondary: hsl(210 40% 96.1%);
-  --color-secondary-foreground: hsl(222 47% 11%);
+  --color-secondary: hsl(200 18% 96%);
+  --color-secondary-foreground: hsl(200 25% 12%);
 
-  --color-destructive: hsl(0 84.2% 60.2%);
-  --color-destructive-foreground: hsl(210 40% 98%);
+  --color-destructive: hsl(0 84% 60%);
+  --color-destructive-foreground: hsl(0 0% 100%);
 
-  --color-muted: hsl(210 40% 96.1%);
-  --color-muted-foreground: hsl(215 16% 47%);
+  --color-muted: hsl(200 18% 96%);
+  --color-muted-foreground: hsl(200 10% 46%);
 
-  --color-accent: hsl(210 40% 96.1%);
-  --color-accent-foreground: hsl(222 47% 11%);
+  --color-accent: hsl(200 18% 96%);
+  --color-accent-foreground: hsl(200 25% 12%);
 
   --color-popover: hsl(0 0% 100%);
-  --color-popover-foreground: hsl(222 47% 11%);
+  --color-popover-foreground: hsl(200 25% 12%);
 
   --color-card: hsl(0 0% 100%);
-  --color-card-foreground: hsl(222 47% 11%);
+  --color-card-foreground: hsl(200 25% 12%);
 
   --radius-lg: 0.75rem;
   --radius-md: calc(0.75rem - 2px);
@@ -37,30 +38,49 @@
 }
 
 .dark {
-  --color-border: hsl(217 33% 20%);
-  --color-input: hsl(217 33% 20%);
-  --color-ring: hsl(217 91% 60%);
-  --color-background: hsl(222 47% 11%);
-  --color-foreground: hsl(210 40% 98%);
+  --color-border: hsl(200 18% 18%);
+  --color-input: hsl(200 18% 18%);
+  --color-ring: hsl(197 72% 48%);
+  --color-background: hsl(200 25% 7%);
+  --color-foreground: hsl(200 10% 96%);
 
-  --color-primary: hsl(217 91% 60%);
-  --color-primary-foreground: hsl(222 47% 11%);
+  --color-primary: hsl(197 72% 48%);
+  --color-primary-foreground: hsl(200 25% 7%);
 
-  --color-secondary: hsl(217 33% 17%);
-  --color-secondary-foreground: hsl(210 40% 98%);
+  --color-secondary: hsl(200 18% 13%);
+  --color-secondary-foreground: hsl(200 10% 96%);
 
-  --color-destructive: hsl(0 62.8% 30.6%);
-  --color-destructive-foreground: hsl(210 40% 98%);
+  --color-destructive: hsl(0 63% 31%);
+  --color-destructive-foreground: hsl(200 10% 96%);
 
-  --color-muted: hsl(217 33% 17%);
-  --color-muted-foreground: hsl(215 20% 65%);
+  --color-muted: hsl(200 18% 13%);
+  --color-muted-foreground: hsl(200 10% 58%);
 
-  --color-accent: hsl(217 33% 17%);
-  --color-accent-foreground: hsl(210 40% 98%);
+  --color-accent: hsl(200 18% 13%);
+  --color-accent-foreground: hsl(200 10% 96%);
 
-  --color-popover: hsl(222 47% 13%);
-  --color-popover-foreground: hsl(210 40% 98%);
+  --color-popover: hsl(200 25% 9%);
+  --color-popover-foreground: hsl(200 10% 96%);
 
-  --color-card: hsl(222 47% 13%);
-  --color-card-foreground: hsl(210 40% 98%);
+  --color-card: hsl(200 25% 9%);
+  --color-card-foreground: hsl(200 10% 96%);
+}
+
+/* Subtle entrance animations */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.35s ease-out both;
+}
+
+.animate-slide-up {
+  animation: slide-up 0.4s ease-out both;
 }

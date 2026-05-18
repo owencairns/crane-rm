@@ -2,7 +2,7 @@
 
 import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
-import { FileText, ArrowRight, Activity, Calendar, User, MoreHorizontal, Clock } from "lucide-react"
+import { FileText, ArrowRight, Activity, Calendar, MoreHorizontal, Clock, RotateCcw } from "lucide-react"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -20,7 +20,7 @@ export interface Contract {
   name: string
   client: string
   date: string
-  status: "uploaded" | "parsed" | "embedded" | "analyzing" | "complete" | "failed"
+  status: "uploaded" | "parsing" | "analyzing" | "complete" | "failed"
   riskScore?: number
 }
 
@@ -28,9 +28,10 @@ interface ContractListProps {
   contracts: Contract[]
   viewMode: "grid" | "list"
   onDelete?: (contractId: string) => void
+  onReprocess?: (contractId: string) => void
 }
 
-export function ContractList({ contracts, viewMode, onDelete }: ContractListProps) {
+export function ContractList({ contracts, viewMode, onDelete, onReprocess }: ContractListProps) {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [contractToDelete, setContractToDelete] = useState<Contract | null>(null)
 
@@ -67,7 +68,7 @@ export function ContractList({ contracts, viewMode, onDelete }: ContractListProp
                     <span>{contract.date}</span>
                   </div>
                   <div className="col-span-7 sm:col-span-12 lg:col-span-0 flex justify-end items-center gap-2">
-                    {(contract.status === "uploaded" || contract.status === "parsed" || contract.status === "embedded" || contract.status === "analyzing") && (
+                    {(contract.status === "uploaded" || contract.status === "parsing" || contract.status === "analyzing") && (
                       <Badge variant="outline" className="bg-blue-500/10 text-blue-600 border-blue-200 dark:border-blue-800 dark:text-blue-400 gap-1.5">
                         <Activity className="h-3 w-3 animate-spin" />
                         Processing
@@ -93,7 +94,7 @@ export function ContractList({ contracts, viewMode, onDelete }: ContractListProp
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       {contracts.map((contract) => (
         <Link href={`/contracts/${contract.id}`} key={contract.id} className="block group h-full">
-          <Card className="h-full flex flex-col border-border/60 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 overflow-hidden bg-card">
+          <Card className="h-full flex flex-col border-border/60 hover:border-primary/20 transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 overflow-hidden bg-card">
             <div className="p-5 flex-1 flex flex-col space-y-4">
               <div className="flex justify-between items-start">
                 <div className="p-2.5 rounded-lg bg-primary/5 text-primary border border-primary/10 group-hover:bg-primary/10 transition-colors">
@@ -108,6 +109,17 @@ export function ContractList({ contracts, viewMode, onDelete }: ContractListProp
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem>View Details</DropdownMenuItem>
                     <DropdownMenuItem>Download PDF</DropdownMenuItem>
+                    {contract.status === "failed" && onReprocess && (
+                      <DropdownMenuItem
+                        onClick={(e) => {
+                          e.preventDefault()
+                          onReprocess(contract.id)
+                        }}
+                      >
+                        <RotateCcw className="h-3.5 w-3.5 mr-2" />
+                        Reprocess
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuItem
                       className="text-destructive"
                       onClick={(e) => handleDeleteClick(contract, e)}
@@ -130,9 +142,14 @@ export function ContractList({ contracts, viewMode, onDelete }: ContractListProp
                   <span>{contract.date}</span>
                 </div>
 
-                {(contract.status === "uploaded" || contract.status === "parsed" || contract.status === "embedded" || contract.status === "analyzing") && (
+                {(contract.status === "uploaded" || contract.status === "parsing" || contract.status === "analyzing") && (
                   <Badge variant="secondary" className="text-xs font-normal bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400">
                     Processing
+                  </Badge>
+                )}
+                {contract.status === "failed" && (
+                  <Badge variant="destructive" className="text-xs font-normal">
+                    Failed
                   </Badge>
                 )}
               </div>
@@ -141,7 +158,7 @@ export function ContractList({ contracts, viewMode, onDelete }: ContractListProp
             {/* Progress Bar for Status */}
             <div className={cn(
               "h-1 w-full transition-colors duration-300",
-              (contract.status === "uploaded" || contract.status === "parsed" || contract.status === "embedded" || contract.status === "analyzing") && "bg-blue-500 animate-pulse",
+              (contract.status === "uploaded" || contract.status === "parsing" || contract.status === "analyzing") && "bg-blue-500 animate-pulse",
               contract.status === "complete" && "bg-green-500",
               contract.status === "failed" && "bg-destructive"
             )} />

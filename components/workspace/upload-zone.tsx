@@ -31,10 +31,10 @@ export function UploadZone({ onUpload, isCompact = false }: UploadZoneProps) {
       className={cn(
         "relative group cursor-pointer overflow-hidden transition-all duration-300 ease-in-out",
         "border-2 border-dashed rounded-xl flex flex-col items-center justify-center text-center",
-        isCompact 
-          ? "h-32 bg-background border-border/60 hover:border-primary/50 hover:bg-muted/30" 
-          : "h-64 bg-background border-border/60 hover:border-primary/50 hover:bg-muted/30 shadow-sm hover:shadow-md",
-        isDragActive && "border-primary bg-primary/5 ring-2 ring-primary/20 scale-[1.01]"
+        isCompact
+          ? "h-32 bg-background border-border/60 hover:border-primary/30 hover:bg-primary/3"
+          : "h-64 bg-background border-border/60 hover:border-primary/30 hover:bg-primary/3 shadow-sm hover:shadow-md",
+        isDragActive && "border-primary bg-primary/5 ring-2 ring-primary/15 scale-[1.005]"
       )}
     >
       <input {...getInputProps()} />

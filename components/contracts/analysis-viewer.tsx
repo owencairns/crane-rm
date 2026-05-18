@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { AlertTriangle, CheckCircle, Info, AlertOctagon } from "lucide-react"
+import { AlertTriangle, CheckCircle, AlertOctagon } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
 
 export interface AnalysisResult {
