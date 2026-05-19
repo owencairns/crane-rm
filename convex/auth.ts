@@ -21,8 +21,13 @@ const siteHost = (() => {
     return "localhost:3000";
   }
 })();
+const extraAllowedHosts = (process.env.ALLOWED_HOSTS ?? "")
+  .split(",")
+  .map((h) => h.trim())
+  .filter(Boolean);
 const localAllowedHosts = [
   siteHost,
+  ...extraAllowedHosts,
   "localhost:*",
   "127.0.0.1:*",
   "10.0.0.*:*",
