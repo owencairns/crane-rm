@@ -1,7 +1,7 @@
 import { createClient, type GenericCtx } from "@convex-dev/better-auth";
 import { convex } from "@convex-dev/better-auth/plugins";
 import { betterAuth } from "better-auth/minimal";
-import { APIError } from "better-auth/api";
+import { APIError, createAuthMiddleware } from "better-auth/api";
 import { query, type ActionCtx } from "./_generated/server";
 import { components, internal } from "./_generated/api";
 import type { DataModel } from "./_generated/dataModel";
@@ -36,8 +36,9 @@ const localAllowedHosts = [
 
 export const authComponent = createClient<DataModel>(components.betterAuth);
 
-export const createAuth = (ctx: GenericCtx<DataModel>) =>
-  betterAuth({
+export const createAuth = (ctx: GenericCtx<DataModel>) => {
+  const pendingInviteByEmail = new Map<string, string>();
+  return betterAuth({
     baseURL: {
       allowedHosts: localAllowedHosts,
       fallback: siteUrl,
@@ -51,51 +52,61 @@ export const createAuth = (ctx: GenericCtx<DataModel>) =>
       enabled: true,
       requireEmailVerification: false,
     },
-    user: {
-      additionalFields: {
-        inviteToken: {
-          type: "string",
-          required: false,
-          input: true,
-        },
-      },
+    hooks: {
+      before: createAuthMiddleware(async (mw) => {
+        if (mw.path !== "/sign-up/email") return;
+        const body = mw.body as { email?: string; inviteToken?: string } | undefined;
+        if (!body?.email) return;
+        const inviteToken = body.inviteToken;
+        // Strip from body so it never reaches the database adapter (the
+        // Convex better-auth user table has a strict validator that rejects
+        // unknown fields).
+        delete body.inviteToken;
+
+        if (isSuperAdminEmail(body.email)) return;
+
+        if (!inviteToken) {
+          throw new APIError("BAD_REQUEST", {
+            message: "Sign-up is invite-only. A valid invite link is required.",
+          });
+        }
+
+        try {
+          await (ctx as ActionCtx).runQuery(internal.invites.assertValidForSignup, {
+            token: inviteToken,
+          });
+        } catch (err) {
+          const message = err instanceof Error ? err.message : "Invalid invite";
+          throw new APIError("BAD_REQUEST", { message });
+        }
+
+        pendingInviteByEmail.set(body.email, inviteToken);
+      }),
     },
     databaseHooks: {
       user: {
         create: {
-          before: async (user) => {
-            const incoming = user as typeof user & { inviteToken?: string };
-            const inviteToken = incoming.inviteToken;
-            const { inviteToken: _omit, ...userToSave } = incoming;
-
-            if (isSuperAdminEmail(user.email)) {
-              return { data: userToSave };
-            }
-
-            if (!inviteToken) {
-              throw new APIError("BAD_REQUEST", {
-                message: "Sign-up is invite-only. A valid invite link is required.",
-              });
-            }
-
+          after: async (user) => {
+            const inviteToken = pendingInviteByEmail.get(user.email);
+            if (!inviteToken) return;
+            pendingInviteByEmail.delete(user.email);
             try {
               await (ctx as ActionCtx).runMutation(internal.invites.consumeForSignup, {
                 token: inviteToken,
                 email: user.email,
               });
-            } catch (err) {
-              const message =
-                err instanceof Error ? err.message : "Invalid invite";
-              throw new APIError("BAD_REQUEST", { message });
+            } catch {
+              // User is already created; swallow to avoid leaving the
+              // account inaccessible. The invite may already be consumed
+              // by a concurrent signup — that's acceptable.
             }
-
-            return { data: userToSave };
           },
         },
       },
     },
     plugins: [convex({ authConfig })],
   });
+};
 
 export const getCurrentUser = query({
   args: {},

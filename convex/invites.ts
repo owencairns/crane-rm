@@ -1,17 +1,10 @@
 import { ConvexError } from "convex/values";
 import { v } from "convex/values";
-import { internalMutation, mutation, query, type QueryCtx, type MutationCtx } from "./_generated/server";
-import { isSuperAdminEmail } from "./lib/admin";
+import { internalMutation, internalQuery, mutation, query } from "./_generated/server";
+import { requireAdmin } from "./lib/admin";
 
 function generateToken() {
   return crypto.randomUUID().replace(/-/g, "");
-}
-
-async function requireSuperAdmin(ctx: QueryCtx | MutationCtx) {
-  const identity = await ctx.auth.getUserIdentity();
-  if (!identity) throw new ConvexError("Unauthorized");
-  if (!isSuperAdminEmail(identity.email)) throw new ConvexError("Forbidden");
-  return identity;
 }
 
 export const create = mutation({
@@ -20,7 +13,7 @@ export const create = mutation({
     expiresInDays: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const me = await requireSuperAdmin(ctx);
+    const me = await requireAdmin(ctx);
     const token = generateToken();
     const now = Date.now();
     const expiresAt =
@@ -30,7 +23,7 @@ export const create = mutation({
 
     const id = await ctx.db.insert("invites", {
       token,
-      createdBy: me.subject,
+      createdBy: me.identity.subject,
       createdAt: now,
       expiresAt,
       note: args.note,
@@ -42,7 +35,7 @@ export const create = mutation({
 export const list = query({
   args: {},
   handler: async (ctx) => {
-    await requireSuperAdmin(ctx);
+    await requireAdmin(ctx);
     const all = await ctx.db.query("invites").order("desc").collect();
     return all.map((i) => ({
       id: i._id,
@@ -61,7 +54,7 @@ export const list = query({
 export const revoke = mutation({
   args: { id: v.id("invites") },
   handler: async (ctx, args) => {
-    await requireSuperAdmin(ctx);
+    await requireAdmin(ctx);
     const invite = await ctx.db.get(args.id);
     if (!invite) throw new ConvexError("Invite not found");
     if (invite.consumedAt) throw new ConvexError("Cannot revoke a consumed invite");
@@ -83,6 +76,21 @@ export const validate = query({
     if (invite.expiresAt && invite.expiresAt < Date.now())
       return { status: "expired" as const };
     return { status: "valid" as const, note: invite.note };
+  },
+});
+
+export const assertValidForSignup = internalQuery({
+  args: { token: v.string() },
+  handler: async (ctx, args) => {
+    const invite = await ctx.db
+      .query("invites")
+      .withIndex("by_token", (q) => q.eq("token", args.token))
+      .unique();
+    if (!invite) throw new Error("Invalid invite");
+    if (invite.revokedAt) throw new Error("Invite was revoked");
+    if (invite.consumedAt) throw new Error("Invite already used");
+    if (invite.expiresAt && invite.expiresAt < Date.now())
+      throw new Error("Invite expired");
   },
 });
 
