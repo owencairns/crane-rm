@@ -2,7 +2,7 @@ import { createClient, type GenericCtx } from "@convex-dev/better-auth";
 import { convex } from "@convex-dev/better-auth/plugins";
 import { betterAuth } from "better-auth/minimal";
 import { APIError } from "better-auth/api";
-import { query } from "./_generated/server";
+import { query, type ActionCtx } from "./_generated/server";
 import { components, internal } from "./_generated/api";
 import type { DataModel } from "./_generated/dataModel";
 import authConfig from "./auth.config";
@@ -74,7 +74,7 @@ export const createAuth = (ctx: GenericCtx<DataModel>) =>
             }
 
             try {
-              await ctx.runMutation(internal.invites.consumeForSignup, {
+              await (ctx as ActionCtx).runMutation(internal.invites.consumeForSignup, {
                 token: inviteToken,
                 email: user.email,
               });
