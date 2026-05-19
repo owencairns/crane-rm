@@ -10,7 +10,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const router = useRouter()
 
   useEffect(() => {
-    if (me === null || (me && !me.isSuperAdmin)) {
+    if (me === null || (me && !me.isAdmin)) {
       router.replace("/dashboard")
     }
   }, [me, router])
@@ -23,7 +23,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     )
   }
 
-  if (!me?.isSuperAdmin) return null
+  if (!me?.isAdmin) return null
 
   return <>{children}</>
 }

@@ -70,12 +70,20 @@ export function AppNav() {
                   Redline
                 </span>
               </Link>
-              {me?.isSuperAdmin && (
+              {me?.isAdmin && (
                 <Link
                   href="/admin/invites"
                   className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
                 >
                   Invites
+                </Link>
+              )}
+              {me?.isSuperAdmin && (
+                <Link
+                  href="/admin/users"
+                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Users
                 </Link>
               )}
             </div>

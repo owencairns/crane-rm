@@ -95,6 +95,13 @@ export default defineSchema({
     .index("by_contract", ["contractId"])
     .index("by_analysis_provision", ["analysisId", "provisionId"]),
 
+  userRoles: defineTable({
+    userId: v.string(),
+    role: v.literal("admin"),
+    grantedAt: v.number(),
+    grantedBy: v.string(),
+  }).index("by_user", ["userId"]),
+
   invites: defineTable({
     token: v.string(),
     createdBy: v.string(),
