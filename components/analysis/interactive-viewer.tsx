@@ -33,6 +33,9 @@ export function InteractiveViewer({ result, pdfUrl }: InteractiveViewerProps) {
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set())
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set(['critical', 'high']))
   const [selectedFindingId, setSelectedFindingId] = useState<string | null>(null)
+  const [targetPage, setTargetPage] = useState<number | undefined>(undefined)
+
+  const handlePageClick = (page: number) => setTargetPage(page)
 
   const visibleFindings = useMemo(
     () => result.findings.filter(f => f.matched),
@@ -90,6 +93,7 @@ export function InteractiveViewer({ result, pdfUrl }: InteractiveViewerProps) {
         {pdfUrl ? (
           <PDFViewer
             pdfUrl={pdfUrl}
+            targetPage={targetPage}
             highlightedPages={highlightedPages}
           />
         ) : (
@@ -222,11 +226,22 @@ export function InteractiveViewer({ result, pdfUrl }: InteractiveViewerProps) {
                                 )}
 
                                 {finding.pageReferences && finding.pageReferences.length > 0 && (
-                                  <div className="flex items-center gap-2">
+                                  <div className="flex items-center gap-2 flex-wrap">
                                     <FileText className="h-3 w-3 text-muted-foreground" />
-                                    <span className="text-[10px] text-muted-foreground">
-                                      Pages: {finding.pageReferences.join(', ')}
-                                    </span>
+                                    <span className="text-[10px] text-muted-foreground">Pages:</span>
+                                    {finding.pageReferences.map((p) => (
+                                      <button
+                                        key={p}
+                                        type="button"
+                                        onClick={(e) => {
+                                          e.stopPropagation()
+                                          handlePageClick(p)
+                                        }}
+                                        className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary hover:bg-primary/20 transition-colors font-medium"
+                                      >
+                                        {p}
+                                      </button>
+                                    ))}
                                   </div>
                                 )}
 
@@ -244,7 +259,7 @@ export function InteractiveViewer({ result, pdfUrl }: InteractiveViewerProps) {
                                 {finding.recommendation && (
                                   <div>
                                     <h4 className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">
-                                      AI Recommendation
+                                      Redline Recommendation
                                     </h4>
                                     <p className="text-xs text-foreground/80">
                                       {finding.recommendation}

@@ -1,15 +1,17 @@
 "use client"
 
-import { useQuery } from "convex/react"
+import { useState } from "react"
+import { useMutation, useQuery } from "convex/react"
 import type { Id } from "@/convex/_generated/dataModel"
 import { InteractiveViewer } from "@/components/analysis/interactive-viewer"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, Share2, Download, MoreVertical } from "lucide-react"
+import { ArrowLeft, Share2, Download, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { useParams } from "next/navigation"
 import { Skeleton } from "@/components/ui/skeleton"
 import { AnalysisResult, Finding } from "@/components/contracts/analysis-viewer"
 import { api } from "@/convex/_generated/api"
+import { toast } from "sonner"
 
 export default function AnalysisPage() {
   const params = useParams()
@@ -18,6 +20,22 @@ export default function AnalysisPage() {
   const contract = useQuery(api.contracts.get, { contractId })
   const results = useQuery(api.contracts.getResults, { contractId })
   const pdfUrlResponse = useQuery(api.contracts.getPdfUrl, { contractId })
+  const enableSharing = useMutation(api.contracts.enableSharing)
+  const [sharing, setSharing] = useState(false)
+
+  const handleShare = async () => {
+    setSharing(true)
+    try {
+      const { token } = await enableSharing({ contractId })
+      const url = `${window.location.origin}/share/${token}`
+      await navigator.clipboard.writeText(url).catch(() => {})
+      toast.success("Share link copied to clipboard")
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to enable sharing")
+    } finally {
+      setSharing(false)
+    }
+  }
 
   const loading = contract === undefined || results === undefined || pdfUrlResponse === undefined
 
@@ -87,22 +105,27 @@ export default function AnalysisPage() {
           <div className="flex flex-col">
             <h1 className="text-xl font-bold tracking-tight">{analysisResult.contractName}</h1>
             <span className="text-xs text-muted-foreground font-mono uppercase tracking-wider">
-              Analysis Complete • {analysisResult.findings.length} Findings
+              Analysis Complete • {analysisResult.findings.filter((f) => f.matched).length} Provisions Flagged
             </span>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="gap-2">
-            <Share2 className="h-4 w-4" />
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2"
+            onClick={handleShare}
+            disabled={sharing}
+          >
+            {sharing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Share2 className="h-4 w-4" />}
             Share
           </Button>
-          <Button variant="default" size="sm" className="gap-2">
-            <Download className="h-4 w-4" />
-            Export
-          </Button>
-          <Button variant="ghost" size="icon">
-            <MoreVertical className="h-4 w-4" />
+          <Button variant="default" size="sm" className="gap-2" asChild>
+            <Link href={`/contracts/${contractId}/report`} target="_blank">
+              <Download className="h-4 w-4" />
+              Export
+            </Link>
           </Button>
         </div>
       </div>

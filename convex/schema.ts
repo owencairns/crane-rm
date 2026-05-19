@@ -30,9 +30,12 @@ export default defineSchema({
     state: v.optional(v.string()),
     riskScore: v.optional(v.number()),
     lastAnalysisId: v.optional(v.id("analyses")),
+    shareToken: v.optional(v.string()),
     createdAt: v.number(),
     updatedAt: v.number(),
-  }).index("by_owner", ["ownerId"]),
+  })
+    .index("by_owner", ["ownerId"])
+    .index("by_share_token", ["shareToken"]),
 
   chunks: defineTable({
     ownerId: v.string(),
@@ -66,6 +69,7 @@ export default defineSchema({
     model: v.string(),
     status: v.string(),
     summaryCounts: v.optional(analysisSummaryCounts),
+    summary: v.optional(v.string()),
     error: v.optional(analysisError),
   })
     .index("by_contract", ["contractId"])
@@ -90,4 +94,17 @@ export default defineSchema({
     .index("by_analysis", ["analysisId"])
     .index("by_contract", ["contractId"])
     .index("by_analysis_provision", ["analysisId", "provisionId"]),
+
+  invites: defineTable({
+    token: v.string(),
+    createdBy: v.string(),
+    createdAt: v.number(),
+    expiresAt: v.optional(v.number()),
+    note: v.optional(v.string()),
+    consumedBy: v.optional(v.string()),
+    consumedAt: v.optional(v.number()),
+    revokedAt: v.optional(v.number()),
+  })
+    .index("by_token", ["token"])
+    .index("by_creator", ["createdBy"]),
 });

@@ -1,8 +1,9 @@
 "use client"
 
 import { useState } from "react"
-import Image from "next/image"
 import Link from "next/link"
+import { useQuery } from "convex/react"
+import { api } from "@/convex/_generated/api"
 import { useAuth } from "@/contexts/AuthContext"
 import { Button } from "@/components/ui/button"
 import {
@@ -31,6 +32,7 @@ import { useRouter } from "next/navigation"
 
 export function AppNav() {
   const { user, signOut } = useAuth()
+  const me = useQuery(api.users.current)
   const router = useRouter()
   const [showProfileModal, setShowProfileModal] = useState(false)
 
@@ -62,12 +64,21 @@ export function AppNav() {
       <nav className="border-b border-border/60 bg-background/95 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
-            <Link href="/dashboard" className="flex items-center gap-3 group">
-              <Image src="/red-cedar-logo.svg" alt="Red Cedar Agency" width={40} height={40} className="h-10 w-auto"/>
-              <span className="font-bold text-xl tracking-tight text-foreground group-hover:text-primary transition-colors">
-                Crane Risk Management
-              </span>
-            </Link>
+            <div className="flex items-center gap-6">
+              <Link href="/dashboard" className="flex items-center group">
+                <span className="font-bold text-xl tracking-tight text-foreground group-hover:text-primary transition-colors">
+                  Redline
+                </span>
+              </Link>
+              {me?.isSuperAdmin && (
+                <Link
+                  href="/admin/invites"
+                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Invites
+                </Link>
+              )}
+            </div>
 
             <div className="flex items-center gap-4">
               <DropdownMenu>

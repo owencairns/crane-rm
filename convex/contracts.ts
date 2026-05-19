@@ -201,66 +201,132 @@ export const getPdfUrl = query({
   },
 });
 
+async function buildAnalysisResult(
+  ctx: QueryCtx,
+  contract: Doc<"contracts">,
+) {
+  if (!contract.lastAnalysisId) return null;
+  const analysis = await ctx.db.get(contract.lastAnalysisId);
+  if (!analysis) return null;
+
+  const findings = await ctx.db
+    .query("findings")
+    .withIndex("by_analysis", (q) => q.eq("analysisId", contract.lastAnalysisId!))
+    .collect();
+
+  const matchedCount = findings.filter((f) => f.matched).length;
+  const riskScore = contract.riskScore ?? calculateRiskScore(findings as FindingRecord[]);
+
+  return {
+    contractId: contract._id,
+    contractName: contract.filename,
+    uploadDate: formatContractDate(contract.createdAt),
+    jobId: analysis._id,
+    status: analysis.status,
+    summary:
+      analysis.summary ??
+      `Analysis complete: ${matchedCount} provisions flagged.`,
+    findings: findings.map((finding) => {
+      const provision = getProvisionById(finding.provisionId);
+      return {
+        id: finding.provisionId,
+        priority: finding.priority,
+        matched: finding.matched,
+        confidence: finding.confidence,
+        category: finding.priority,
+        title:
+          provision?.canonicalWording ||
+          finding.provisionId
+            .split("-")
+            .map((part) => `${part.charAt(0).toUpperCase()}${part.slice(1)}`)
+            .join(" "),
+        description: finding.reasoningSummary,
+        pageReferences: finding.evidencePages,
+        evidenceExcerpts: finding.evidenceExcerpts,
+        recommendation: finding.recommendedAction,
+        suggestedAction: finding.matched ? provision?.suggestedAction : undefined,
+        screeningResult: finding.screeningResult,
+      };
+    }),
+    riskScore,
+    completedAt: analysis.completedAt,
+    error: analysis.error,
+  };
+}
+
 export const getResults = query({
-  args: {
-    contractId: v.id("contracts"),
+  args: { contractId: v.id("contracts") },
+  handler: async (ctx, { contractId }) => {
+    const ownerId = await requireUserId(ctx);
+    const contract = await ctx.db.get(contractId);
+    if (!contract || contract.ownerId !== ownerId) return null;
+    return buildAnalysisResult(ctx, contract);
   },
+});
+
+export const enableSharing = mutation({
+  args: { contractId: v.id("contracts") },
   handler: async (ctx, { contractId }) => {
     const ownerId = await requireUserId(ctx);
     const contract = await ctx.db.get(contractId);
     if (!contract || contract.ownerId !== ownerId) {
-      return null;
+      throw new ConvexError("Contract not found");
     }
-
-    if (!contract.lastAnalysisId) {
-      return null;
+    let token = contract.shareToken;
+    if (!token) {
+      token = crypto.randomUUID();
+      await ctx.db.patch(contractId, { shareToken: token, updatedAt: Date.now() });
     }
+    return { token };
+  },
+});
 
-    const analysis = await ctx.db.get(contract.lastAnalysisId);
-    if (!analysis) {
-      return null;
+export const disableSharing = mutation({
+  args: { contractId: v.id("contracts") },
+  handler: async (ctx, { contractId }) => {
+    const ownerId = await requireUserId(ctx);
+    const contract = await ctx.db.get(contractId);
+    if (!contract || contract.ownerId !== ownerId) {
+      throw new ConvexError("Contract not found");
     }
+    if (contract.shareToken) {
+      await ctx.db.patch(contractId, { shareToken: undefined, updatedAt: Date.now() });
+    }
+  },
+});
 
-    const findings = await ctx.db
-      .query("findings")
-      .withIndex("by_analysis", (queryBuilder) => queryBuilder.eq("analysisId", contract.lastAnalysisId!))
-      .collect();
+export const getShareToken = query({
+  args: { contractId: v.id("contracts") },
+  handler: async (ctx, { contractId }) => {
+    const ownerId = await requireUserId(ctx);
+    const contract = await ctx.db.get(contractId);
+    if (!contract || contract.ownerId !== ownerId) return null;
+    return contract.shareToken ?? null;
+  },
+});
 
-    const matchedCount = findings.filter((finding) => finding.matched).length;
-    const notFoundCount = findings.length - matchedCount;
-    const riskScore = contract.riskScore ?? calculateRiskScore(findings as FindingRecord[]);
+export const getShared = query({
+  args: { token: v.string() },
+  handler: async (ctx, { token }) => {
+    const contract = await ctx.db
+      .query("contracts")
+      .withIndex("by_share_token", (q) => q.eq("shareToken", token))
+      .unique();
+    if (!contract) return null;
+    return buildAnalysisResult(ctx, contract);
+  },
+});
 
-    return {
-      contractId,
-      jobId: analysis._id,
-      status: analysis.status,
-      summary: `Analysis complete: ${matchedCount} provisions found, ${notFoundCount} not found.`,
-      findings: findings.map((finding) => {
-        const provision = getProvisionById(finding.provisionId);
-        return {
-          id: finding.provisionId,
-          priority: finding.priority,
-          matched: finding.matched,
-          confidence: finding.confidence,
-          category: finding.priority,
-          title:
-            provision?.canonicalWording ||
-            finding.provisionId
-              .split("-")
-              .map((part) => `${part.charAt(0).toUpperCase()}${part.slice(1)}`)
-              .join(" "),
-          description: finding.reasoningSummary,
-          pageReferences: finding.evidencePages,
-          evidenceExcerpts: finding.evidenceExcerpts,
-          recommendation: finding.recommendedAction,
-          suggestedAction: finding.matched ? provision?.suggestedAction : undefined,
-          screeningResult: finding.screeningResult,
-        };
-      }),
-      riskScore,
-      completedAt: analysis.completedAt,
-      error: analysis.error,
-    };
+export const getSharedPdfUrl = query({
+  args: { token: v.string() },
+  handler: async (ctx, { token }) => {
+    const contract = await ctx.db
+      .query("contracts")
+      .withIndex("by_share_token", (q) => q.eq("shareToken", token))
+      .unique();
+    if (!contract || !contract.storageId) return null;
+    const url = await ctx.storage.getUrl(contract.storageId);
+    return url ? { url } : null;
   },
 });
 
@@ -500,6 +566,20 @@ export const upsertFindings = internalMutation({
         await ctx.db.insert("findings", document);
       }
     }
+  },
+});
+
+export const listAnalysesMissingSummary = internalQuery({
+  args: {},
+  handler: async (ctx) => {
+    const all = await ctx.db.query("analyses").collect();
+    return all
+      .filter((a) => !a.summary && (a.status === "complete" || a.status === "partial"))
+      .map((a) => ({
+        _id: a._id,
+        contractId: a.contractId,
+        model: a.model,
+      }));
   },
 });
 

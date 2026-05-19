@@ -12,12 +12,15 @@ import type * as auth from "../auth.js";
 import type * as contractNode from "../contractNode.js";
 import type * as contracts from "../contracts.js";
 import type * as http from "../http.js";
+import type * as invites from "../invites.js";
+import type * as lib_admin from "../lib/admin.js";
 import type * as lib_analysisConfig from "../lib/analysisConfig.js";
 import type * as lib_nodeConfig from "../lib/nodeConfig.js";
 import type * as lib_pdf from "../lib/pdf.js";
 import type * as lib_prompts from "../lib/prompts.js";
 import type * as lib_provisions from "../lib/provisions.js";
 import type * as lib_types from "../lib/types.js";
+import type * as users from "../users.js";
 
 import type {
   ApiFromModules,
@@ -30,12 +33,15 @@ declare const fullApi: ApiFromModules<{
   contractNode: typeof contractNode;
   contracts: typeof contracts;
   http: typeof http;
+  invites: typeof invites;
+  "lib/admin": typeof lib_admin;
   "lib/analysisConfig": typeof lib_analysisConfig;
   "lib/nodeConfig": typeof lib_nodeConfig;
   "lib/pdf": typeof lib_pdf;
   "lib/prompts": typeof lib_prompts;
   "lib/provisions": typeof lib_provisions;
   "lib/types": typeof lib_types;
+  users: typeof users;
 }>;
 
 /**

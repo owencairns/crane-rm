@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { ArrowRight, Shield, Zap, ChevronDown, Scale, ExternalLink } from "lucide-react"
-import Image from "next/image"
 
 function DotGrid() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -137,17 +136,8 @@ function FloatingNav() {
       }`}
     >
       <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Image
-            src="/red-cedar-logo.svg"
-            alt="Red Cedar Agency"
-            width={40}
-            height={40}
-            className="h-10 w-auto"
-          />
-          <div className="hidden sm:block">
-            <span className="font-semibold text-foreground">Crane Risk Management</span>
-          </div>
+        <div className="flex items-center">
+          <span className="font-semibold text-lg tracking-tight text-foreground">Redline</span>
         </div>
         <div className="flex items-center gap-4">
           <a
@@ -181,27 +171,14 @@ function HeroSection() {
     <section className="relative min-h-screen flex flex-col items-center justify-center px-6">
       <div className="max-w-4xl mx-auto text-center space-y-8 animate-fade-in">
         <div className="space-y-6">
-          <div className="flex flex-col items-center gap-4">
-            <Image
-              src="/red-cedar-logo.svg"
-              alt="Red Cedar Agency"
-              width={80}
-              height={80}
-              className="h-20 w-auto"
-            />
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/8 text-primary text-sm font-medium">
-              <Zap className="w-3.5 h-3.5" />
-              A Red Cedar Insurance Agency Product
-            </div>
-          </div>
           <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-foreground leading-[1.1]">
-            Crane Risk
+            Redline
             <br />
-            <span className="text-primary">Management</span>
+            <span className="text-primary">Contract Review</span>
           </h1>
           <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Customized tools developed to assist Crane companies in reducing their risk
-            through contract analysis and other risk management techniques.
+            Customized contract review tools developed to assist crane companies in
+            identifying risks and unfavorable terms through automated contract analysis.
           </p>
         </div>
 
@@ -259,10 +236,10 @@ function FeaturesSection() {
       <div className="max-w-6xl mx-auto">
         <div className="text-center space-y-4 mb-16">
           <h2 className="text-3xl sm:text-4xl font-bold text-foreground">
-            Contract Analysis Built for Crane Companies
+            Contract Review Built for Crane Companies
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Powerful risk management tools designed specifically for the crane industry.
+            Powerful contract review tools designed specifically for the crane industry.
           </p>
         </div>
 
@@ -357,22 +334,13 @@ function Footer() {
     <footer className="relative border-t border-border/40 py-12 px-6">
       <div className="max-w-6xl mx-auto">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-3">
-            <Image
-              src="/red-cedar-logo.svg"
-              alt="Red Cedar Agency"
-              width={32}
-              height={32}
-              className="h-8 w-auto"
-            />
-            <div>
-              <span className="text-sm font-medium text-foreground">
-                Crane Risk Management
-              </span>
-              <p className="text-xs text-muted-foreground">
-                A Red Cedar Insurance Agency Product
-              </p>
-            </div>
+          <div>
+            <span className="text-sm font-medium text-foreground">
+              Redline
+            </span>
+            <p className="text-xs text-muted-foreground">
+              by Red Cedar Insurance Agency
+            </p>
           </div>
 
           <div className="flex items-center gap-6">
@@ -397,7 +365,7 @@ function Footer() {
 
         <div className="mt-8 pt-6 border-t border-border/40 text-center">
           <p className="text-xs text-muted-foreground">
-            CraneRM.com - Contract analysis and risk management tools for the crane industry
+            Redline by Red Cedar Insurance Agency — Contract review for the crane industry
           </p>
         </div>
       </div>
