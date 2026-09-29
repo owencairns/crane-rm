@@ -1,4 +1,5 @@
 import { ProtectedRoute } from "@/components/ProtectedRoute"
+import { AccessGate } from "@/components/AccessGate"
 import { AppNav } from "@/components/layout/AppNav"
 
 export default function AuthenticatedLayout({
@@ -10,7 +11,9 @@ export default function AuthenticatedLayout({
     <ProtectedRoute>
       <div className="h-screen flex flex-col overflow-hidden">
         <AppNav />
-        <main className="flex-1 overflow-y-auto">{children}</main>
+        <main className="flex-1 overflow-y-auto">
+          <AccessGate>{children}</AccessGate>
+        </main>
       </div>
     </ProtectedRoute>
   )

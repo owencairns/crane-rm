@@ -1,9 +1,8 @@
 "use client"
 
 import { useState } from "react"
+import Image from "next/image"
 import Link from "next/link"
-import { useQuery } from "convex/react"
-import { api } from "@/convex/_generated/api"
 import { useAuth } from "@/contexts/AuthContext"
 import { Button } from "@/components/ui/button"
 import {
@@ -26,15 +25,29 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
-import { User, LogOut, ChevronDown, Mail, Calendar, Shield } from "lucide-react"
+import { User, LogOut, ChevronDown, Mail, Calendar, Shield, ScrollText, ShieldCheck, Calculator, Scale } from "lucide-react"
 import { toast } from "sonner"
-import { useRouter } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
+import { useQuery } from "convex/react"
+import { api } from "@/convex/_generated/api"
+import { AUDITGUARD_ENABLED } from "@/lib/features"
+
+const SUITE_TOOLS = [
+  { name: "Contract Review", href: "/redliner", icon: ScrollText },
+  { name: "SubProtect", href: "/sub-protect", icon: ShieldCheck },
+  ...(AUDITGUARD_ENABLED
+    ? [{ name: "AuditGuard", href: "/audit-guard", icon: Calculator }]
+    : []),
+  { name: "Threshold Calculator", href: "/threshold-calculator", icon: Scale },
+]
 
 export function AppNav() {
   const { user, signOut } = useAuth()
-  const me = useQuery(api.users.current)
   const router = useRouter()
+  const pathname = usePathname()
   const [showProfileModal, setShowProfileModal] = useState(false)
+  const access = useQuery(api.access.myAccess)
+  const isAdmin = access?.isAdmin ?? false
 
   const handleSignOut = async () => {
     try {
@@ -64,28 +77,34 @@ export function AppNav() {
       <nav className="border-b border-border/60 bg-background/95 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
-            <div className="flex items-center gap-6">
-              <Link href="/dashboard" className="flex items-center group">
+            <div className="flex items-center gap-8">
+              <Link href="/dashboard" className="flex items-center gap-3 group">
+                <Image src="/red-cedar-logo.svg" alt="Red Cedar Agency" width={40} height={40} className="h-10 w-auto"/>
                 <span className="font-bold text-xl tracking-tight text-foreground group-hover:text-primary transition-colors">
-                  Redline
+                  Red Cedar Suite
                 </span>
               </Link>
-              {me?.isAdmin && (
-                <Link
-                  href="/admin/invites"
-                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Invites
-                </Link>
-              )}
-              {me?.isSuperAdmin && (
-                <Link
-                  href="/admin/users"
-                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Users
-                </Link>
-              )}
+
+              <nav className="hidden md:flex items-center gap-1">
+                {SUITE_TOOLS.map((tool) => {
+                  const Icon = tool.icon
+                  const active = pathname?.startsWith(tool.href)
+                  return (
+                    <Link
+                      key={tool.href}
+                      href={tool.href}
+                      className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        active
+                          ? "bg-muted text-foreground"
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                      }`}
+                    >
+                      <Icon className="h-4 w-4" />
+                      {tool.name}
+                    </Link>
+                  )
+                })}
+              </nav>
             </div>
 
             <div className="flex items-center gap-4">
@@ -122,6 +141,12 @@ export function AppNav() {
                     <User className="mr-2 h-4 w-4" />
                     Profile
                   </DropdownMenuItem>
+                  {isAdmin && (
+                    <DropdownMenuItem onClick={() => router.push("/admin")} className="cursor-pointer">
+                      <Shield className="mr-2 h-4 w-4" />
+                      Admin
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem onClick={handleSignOut} className="text-destructive focus:text-destructive cursor-pointer">
                     <LogOut className="mr-2 h-4 w-4" />
                     Logout

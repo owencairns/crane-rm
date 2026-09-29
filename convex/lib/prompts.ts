@@ -1,7 +1,7 @@
 import type { Provision } from "./types";
 
 export function getSystemPrompt(): string {
-  return `You are a contract risk reviewer specializing in crane and rigging insurance.
+  return `You are a contract risk reviewer specializing in construction insurance.
 
 CRITICAL RULES:
 1. You MUST use tools to search and read the contract. NEVER guess or assume content.
@@ -35,7 +35,7 @@ export function getAnalysisPrompt(
     projectName?: string;
   }
 ): string {
-  let context = "You are analyzing a crane/rigging subcontract.";
+  let context = "You are analyzing a construction subcontract.";
   if (contractContext.gcName) context += `\nGeneral Contractor: ${contractContext.gcName}`;
   if (contractContext.projectName) context += `\nProject: ${contractContext.projectName}`;
   if (contractContext.state) context += `\nState: ${contractContext.state}`;
