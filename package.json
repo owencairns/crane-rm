@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "concurrently \"npm run dev:next\" \"npm run dev:convex\"",
     "dev:next": "next dev",
-    "dev:convex": "convex dev",
+    "dev:convex": "convex dev --env-file .env.local",
     "dev:all": "npm run dev",
     "build": "next build",
     "start": "next start",

@@ -10,7 +10,10 @@ import {
   ChevronRight,
   Zap,
   FileText,
-  AlertCircle
+  AlertCircle,
+  AlertTriangle,
+  AlertOctagon,
+  Circle
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { AnalysisResult, Finding } from "@/components/contracts/analysis-viewer"
@@ -21,21 +24,35 @@ interface InteractiveViewerProps {
   pdfUrl?: string
 }
 
-const PRIORITY_ORDER = ['critical', 'high', 'medium', 'low'] as const
+const PRIORITY_ORDER = ['high', 'medium', 'low', 'other'] as const
 const PRIORITY_LABELS: Record<string, string> = {
-  critical: 'Critical',
-  high: 'High Priority',
-  medium: 'Medium Priority',
-  low: 'Low Priority',
+  high: 'High',
+  medium: 'Medium',
+  low: 'Low',
+  other: 'Other',
+}
+
+// Collapse the backend's priority values into the four buckets shown to the
+// user. Anything that isn't high/medium/low (including legacy "critical" or an
+// unknown value) falls into "Other".
+const normalizePriority = (priority: string): (typeof PRIORITY_ORDER)[number] => {
+  switch (priority) {
+    case 'critical':
+    case 'high':
+      return 'high'
+    case 'medium':
+      return 'medium'
+    case 'low':
+      return 'low'
+    default:
+      return 'other'
+  }
 }
 
 export function InteractiveViewer({ result, pdfUrl }: InteractiveViewerProps) {
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set())
-  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set(['critical', 'high']))
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set(['high', 'medium']))
   const [selectedFindingId, setSelectedFindingId] = useState<string | null>(null)
-  const [targetPage, setTargetPage] = useState<number | undefined>(undefined)
-
-  const handlePageClick = (page: number) => setTargetPage(page)
 
   const visibleFindings = useMemo(
     () => result.findings.filter(f => f.matched),
@@ -45,7 +62,10 @@ export function InteractiveViewer({ result, pdfUrl }: InteractiveViewerProps) {
   const groupedFindings = useMemo(() => {
     const groups: Record<string, Finding[]> = {}
     for (const priority of PRIORITY_ORDER) {
-      groups[priority] = visibleFindings.filter(f => f.priority === priority)
+      groups[priority] = []
+    }
+    for (const finding of visibleFindings) {
+      groups[normalizePriority(finding.priority)].push(finding)
     }
     return groups
   }, [visibleFindings])
@@ -77,12 +97,34 @@ export function InteractiveViewer({ result, pdfUrl }: InteractiveViewerProps) {
     toggleItem(finding.id)
   }
 
+  // Group-header label color, matched to the checkmark colors below.
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'critical': return 'text-destructive'
-      case 'high': return 'text-orange-600 dark:text-orange-400'
+      case 'high': return 'text-red-600 dark:text-red-400'
       case 'medium': return 'text-amber-600 dark:text-amber-400'
+      case 'low': return 'text-green-600 dark:text-green-400'
       default: return 'text-muted-foreground'
+    }
+  }
+
+  // Severity icon container color per bucket: red / yellow / green / gray.
+  const getCheckColor = (priority: string) => {
+    switch (priority) {
+      case 'high': return 'bg-red-50 dark:bg-red-500/15 text-red-600 dark:text-red-400'
+      case 'medium': return 'bg-amber-50 dark:bg-amber-500/15 text-amber-600 dark:text-amber-400'
+      case 'low': return 'bg-green-50 dark:bg-green-500/15 text-green-600 dark:text-green-400'
+      default: return 'bg-muted text-muted-foreground'
+    }
+  }
+
+  // Severity icon per bucket — shape reinforces the color rather than a
+  // one-size-fits-all check: alert for high/medium, check only for low.
+  const getPriorityIcon = (priority: string) => {
+    switch (priority) {
+      case 'high': return AlertOctagon
+      case 'medium': return AlertTriangle
+      case 'low': return CheckCircle
+      default: return Circle
     }
   }
 
@@ -93,7 +135,6 @@ export function InteractiveViewer({ result, pdfUrl }: InteractiveViewerProps) {
         {pdfUrl ? (
           <PDFViewer
             pdfUrl={pdfUrl}
-            targetPage={targetPage}
             highlightedPages={highlightedPages}
           />
         ) : (
@@ -167,6 +208,8 @@ export function InteractiveViewer({ result, pdfUrl }: InteractiveViewerProps) {
                         const isItemExpanded = expandedItems.has(finding.id)
                         const isSelected = selectedFindingId === finding.id
 
+                        const PriorityIcon = getPriorityIcon(priority)
+
                         return (
                           <div
                             key={finding.id}
@@ -179,8 +222,8 @@ export function InteractiveViewer({ result, pdfUrl }: InteractiveViewerProps) {
                               onClick={() => handleFindingClick(finding)}
                               className="w-full px-3 py-2.5 flex items-center gap-3 hover:bg-muted/40 transition-colors text-left"
                             >
-                              <div className="p-1.5 rounded-lg flex-shrink-0 bg-green-50 dark:bg-green-500/15 text-green-600 dark:text-green-400">
-                                <CheckCircle className="h-4 w-4" />
+                              <div className={cn("p-1.5 rounded-lg flex-shrink-0", getCheckColor(priority))}>
+                                <PriorityIcon className="h-4 w-4" />
                               </div>
 
                               <div className="flex-1 min-w-0">
@@ -226,22 +269,11 @@ export function InteractiveViewer({ result, pdfUrl }: InteractiveViewerProps) {
                                 )}
 
                                 {finding.pageReferences && finding.pageReferences.length > 0 && (
-                                  <div className="flex items-center gap-2 flex-wrap">
+                                  <div className="flex items-center gap-2">
                                     <FileText className="h-3 w-3 text-muted-foreground" />
-                                    <span className="text-[10px] text-muted-foreground">Pages:</span>
-                                    {finding.pageReferences.map((p) => (
-                                      <button
-                                        key={p}
-                                        type="button"
-                                        onClick={(e) => {
-                                          e.stopPropagation()
-                                          handlePageClick(p)
-                                        }}
-                                        className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary hover:bg-primary/20 transition-colors font-medium"
-                                      >
-                                        {p}
-                                      </button>
-                                    ))}
+                                    <span className="text-[10px] text-muted-foreground">
+                                      Pages: {finding.pageReferences.join(', ')}
+                                    </span>
                                   </div>
                                 )}
 
@@ -259,7 +291,7 @@ export function InteractiveViewer({ result, pdfUrl }: InteractiveViewerProps) {
                                 {finding.recommendation && (
                                   <div>
                                     <h4 className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">
-                                      Redline Recommendation
+                                      Redline Recommends
                                     </h4>
                                     <p className="text-xs text-foreground/80">
                                       {finding.recommendation}

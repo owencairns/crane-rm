@@ -1,1 +1,5 @@
 backend
+.next
+node_modules
+tsconfig.tsbuildinfo
+.convex/local

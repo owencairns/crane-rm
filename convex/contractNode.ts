@@ -1,6 +1,6 @@
 "use node";
 
-import { Experimental_Agent as Agent, generateText, stepCountIs, tool } from "ai";
+import { Experimental_Agent as Agent, stepCountIs, tool } from "ai";
 import { createOpenAI } from "@ai-sdk/openai";
 import { ConvexError, v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
@@ -9,7 +9,11 @@ import { internal } from "./_generated/api";
 import { analysisConfig } from "./lib/analysisConfig";
 import { generateChunkId, parsePdfWithOcr, chunkOcrPages } from "./lib/pdf";
 import { getSystemPrompt, getAnalysisPrompt } from "./lib/prompts";
-import { getProvisionCatalog, getProvisionCatalogVersion } from "./lib/provisions";
+import {
+  applyProviderLabelRule,
+  getProvisionCatalog,
+  getProvisionCatalogVersion,
+} from "./lib/provisions";
 import { getNodeConfig } from "./lib/nodeConfig";
 import type {
   ChunkRecord,
@@ -24,52 +28,6 @@ import { z } from "zod";
 
 function getOpenAIProvider() {
   return createOpenAI({ apiKey: getNodeConfig().openai.apiKey });
-}
-
-async function generateExecutiveSummary(
-  modelName: string,
-  contract: ContractRecord,
-  findings: FindingRecord[]
-): Promise<string | undefined> {
-  const matched = findings.filter((f) => f.matched);
-  const concerns = matched.filter(
-    (f) => f.priority === "critical" || f.priority === "high"
-  );
-  const concernList = concerns
-    .slice(0, 20)
-    .map((f) => `- [${f.priority.toUpperCase()}] ${f.provisionId}: ${f.reasoningSummary}`)
-    .join("\n");
-
-  const contextLines = [
-    contract.gcName ? `General Contractor: ${contract.gcName}` : null,
-    contract.projectName ? `Project: ${contract.projectName}` : null,
-    contract.state ? `State: ${contract.state}` : null,
-  ].filter(Boolean).join("\n");
-
-  const prompt = `You are a crane/rigging insurance broker. Read these contract analysis findings and write a 2-3 sentence executive summary for a broker who wants to know at a glance whether to worry. Plain language, action-oriented, no fluff. Do not list each finding — synthesize the overall risk picture and the top concerns.
-
-${contextLines}
-
-Total provisions checked: ${findings.length}
-Matched: ${matched.length} (${concerns.length} critical/high)
-
-Top concerns:
-${concernList || "(none of concern)"}
-
-Write the 2-3 sentence executive summary now. Speak directly to the broker; no preamble.`;
-
-  try {
-    const result = await generateText({
-      model: getOpenAIProvider()(modelName),
-      prompt,
-    });
-    return result.text.trim();
-  } catch (error) {
-    log("Executive summary generation failed", {
-      error: error instanceof Error ? error.message : "unknown",
-    });
-    return undefined;
-  }
 }
 
 function log(message: string, ctx?: Record<string, unknown>) {
@@ -186,8 +144,15 @@ function createAgentTools(
         evidenceExcerpts: z.array(z.string()),
         reasoningSummary: z.string(),
         recommendedAction: z.string().optional(),
+        providerType: z
+          .enum(["crane", "scaffold", "other"])
+          .optional()
+          .describe(
+            "Required for subcontractor-vs-service-provider: the trade of the party performing the work, from the scope of work. crane = crane rental/service, rigging, hoisting. scaffold = scaffolding erection/rental/dismantling. other = any other trade."
+          ),
       }),
-      execute: async (finding) => {
+      execute: async (rawFinding) => {
+        const finding = applyProviderLabelRule(rawFinding);
         await ctx.runMutation(internal.contracts.upsertFindings, {
           contractId,
           analysisId,
@@ -320,19 +285,12 @@ async function runAnalysis(
       }, 0)
   );
 
-  const summary = await generateExecutiveSummary(
-    config.openai.analysisModel,
-    contract,
-    finalFindings
-  );
-
   await ctx.runMutation(internal.contracts.patchAnalysis, {
     analysisId,
     patch: {
       status,
       completedAt: Date.now(),
       summaryCounts,
-      ...(summary && { summary }),
       ...(hasErrors && {
         error: {
           message: `${missing.length} provisions not analyzed within step limit`,
@@ -357,41 +315,6 @@ async function runAnalysis(
     missing: missing.length,
   });
 }
-
-export const backfillSummaries = internalAction({
-  args: {},
-  handler: async (ctx) => {
-    const targets = (await ctx.runQuery(
-      internal.contracts.listAnalysesMissingSummary,
-      {}
-    )) as Array<{ _id: Id<"analyses">; contractId: Id<"contracts">; model: string }>;
-
-    let updated = 0;
-    for (const target of targets) {
-      const contract = (await ctx.runQuery(internal.contracts.getContractRecord, {
-        contractId: target.contractId,
-      })) as ContractRecord | null;
-      if (!contract) continue;
-
-      const findings = (await ctx.runQuery(
-        internal.contracts.getFindingsForAnalysis,
-        { analysisId: target._id }
-      )) as FindingRecord[];
-
-      const summary = await generateExecutiveSummary(target.model, contract, findings);
-      if (!summary) continue;
-
-      await ctx.runMutation(internal.contracts.patchAnalysis, {
-        analysisId: target._id,
-        patch: { summary },
-      });
-      updated++;
-    }
-
-    log("Backfill complete", { found: targets.length, updated });
-    return { found: targets.length, updated };
-  },
-});
 
 /* ------------------------------------------------------------------ */
 /*  Ingest action                                                     */
@@ -426,8 +349,8 @@ export const ingestContract = internalAction({
       });
 
       const nodeConfig = getNodeConfig();
-      log("Calling GLM OCR", { contractId, pdfSizeBytes: pdfBuffer.length });
-      const ocrResult = await parsePdfWithOcr(pdfBuffer, nodeConfig.zai.apiKey);
+      log("Calling Mistral OCR", { contractId, pdfSizeBytes: pdfBuffer.length });
+      const ocrResult = await parsePdfWithOcr(pdfBuffer, nodeConfig.mistral.apiKey);
       log("OCR complete", {
         contractId,
         pages: ocrResult.pageCount,

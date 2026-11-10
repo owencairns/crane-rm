@@ -10,12 +10,16 @@ function requiredEnv(name: string): string {
 
 export function getNodeConfig() {
   return {
-    zai: {
-      apiKey: requiredEnv("ZAI_API_KEY"),
+    mistral: {
+      apiKey: requiredEnv("MISTRAL_API_KEY"),
     },
     openai: {
       apiKey: requiredEnv("OPENAI_API_KEY"),
       analysisModel: process.env.OPENAI_ANALYSIS_MODEL || "gpt-5.4-mini",
+      coiOverseerModel:
+        process.env.OPENAI_COI_OVERSEER_MODEL ||
+        process.env.OPENAI_ANALYSIS_MODEL ||
+        "gpt-5.4-mini",
     },
   };
 }

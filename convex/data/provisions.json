@@ -89,7 +89,7 @@
     "priority": "critical",
     "canonicalWording": "Required completed operations additional insured",
     "synonyms": ["completed operations additional insured", "products-completed operations AI", "ongoing and completed operations", "completed ops AI"],
-    "definition": "Requirement to name additional insureds for completed operations coverage. Crane companies are service providers, not contractors - when the hoist is done, your work is done. Completed ops AI allows GCs to pull you into claims years later for work you are not responsible for.",
+    "definition": "Requirement to name additional insureds for completed operations coverage. Specialty subcontractors that complete discrete scopes should be cautious here - once your work is done, your involvement should end. Completed ops AI allows GCs to pull you into claims years later for work you are not responsible for.",
     "suggestedAction": "Do not provide completed operations additional insured endorsements. Remove this from all contracts. Push back on every certificate request.",
     "falsePositiveTraps": ["Ongoing operations only", "General AI requirement without completed ops", "During project only"],
     "confidenceRubric": {
@@ -174,12 +174,12 @@
     "priority": "critical",
     "canonicalWording": "Bailment - responsibility for third-party property",
     "synonyms": ["bailment", "care custody control", "property of others", "storage responsibility", "cargo liability"],
-    "definition": "Liability for property of others while in your care/custody. Bailment coverage spans warehouse storage, cargo/transit, job site, and during rigging/hoist. May need coverage on multiple policies (CGL care-custody-control, riggers liability, cargo/inland marine). Limit liability in bids/tags if property value is not declared.",
+    "definition": "Liability for property of others while in your care/custody. Bailment coverage spans warehouse storage, cargo/transit, job site, and while handling or installing others' property. May need coverage on multiple policies (CGL care-custody-control, installation floater, cargo/inland marine). Limit liability in bids/work orders if property value is not declared.",
     "suggestedAction": "Clearly identify in contracts, bids, purchase orders, and tags how much bailment coverage you'll provide (or if you'll provide any). Make this a discussion point so there are no surprises. Review care, custody, control endorsements with your agent.",
     "falsePositiveTraps": ["Damage to own work", "Standard GL exclusions", "Builder's risk coverage"],
     "confidenceRubric": {
       "explicit": "Explicit assumption of liability for third-party property/cargo",
-      "strongParaphrase": "Responsibility for goods in transit, storage, or during rigging",
+      "strongParaphrase": "Responsibility for goods in transit, storage, or during handling/installation",
       "weak": "General property damage clause"
     },
     "searchQueries": ["bailment coverage responsibility", "care custody control liability", "third party property indemnity"],
@@ -191,7 +191,7 @@
     "priority": "critical",
     "canonicalWording": "Indemnity for others' tools and equipment",
     "synonyms": ["indemnity for equipment", "borrowed equipment", "use of others tools", "contractor tools"],
-    "definition": "Requirement to indemnify for tools/equipment belonging to others. Every contractor should be responsible for their own tools and equipment, even if you are hoisting them.",
+    "definition": "Requirement to indemnify for tools/equipment belonging to others. Every contractor should be responsible for their own tools and equipment, even if you are handling or moving them.",
     "suggestedAction": "Do not indemnify anyone for their tools and equipment. Every contractor should be responsible for their own.",
     "falsePositiveTraps": ["Indemnity for own equipment", "Damage to equipment you caused", "Rental equipment you ordered"],
     "confidenceRubric": {
@@ -206,17 +206,17 @@
   {
     "provisionId": "indemnity-crane-access",
     "priority": "critical",
-    "canonicalWording": "Indemnity for crane access and site security",
-    "synonyms": ["access indemnity", "site security", "safe access", "crane security"],
-    "definition": "Indemnity for site access routes or security of the crane. Large claims have been caused by unauthorized people near crane equipment. Site security and access control should be spelled out - GC should be responsible.",
-    "suggestedAction": "Do not sign up to be responsible for site security. Ensure the subcontract spells out that the GC/owner is responsible for site security and limiting access to the crane. Consider adding this to your bids or tickets.",
-    "falsePositiveTraps": ["Standard site access rights", "Security of own tools", "Your own crane security"],
+    "canonicalWording": "Indemnity for site access and security",
+    "synonyms": ["access indemnity", "site security", "safe access", "equipment security"],
+    "definition": "Indemnity for site access routes or security of your equipment and work area. Large claims have been caused by unauthorized people near heavy equipment and active work areas. Site security and access control should be spelled out - the GC should be responsible.",
+    "suggestedAction": "Do not sign up to be responsible for site security. Ensure the subcontract spells out that the GC/owner is responsible for site security and limiting access to your equipment and work area. Consider adding this to your bids or tickets.",
+    "falsePositiveTraps": ["Standard site access rights", "Security of own tools", "Your own equipment security"],
     "confidenceRubric": {
       "explicit": "Indemnity for site access accidents or security failures",
       "strongParaphrase": "Subcontractor assumes risk of site access conditions and security",
       "weak": "Requirement to secure own equipment"
     },
-    "searchQueries": ["site security indemnity", "crane access liability", "site access responsibility"],
+    "searchQueries": ["site security indemnity", "site access liability", "site access responsibility"],
     "exactPatterns": ["site security", "access", "security", "unauthorized", "access routes"],
     "clusterId": "site-conditions"
   },
@@ -225,8 +225,8 @@
     "priority": "critical",
     "canonicalWording": "Joint ventures, bare rentals, borrowed servant",
     "synonyms": ["joint venture", "borrowed servant", "joint employer", "bare rental", "equipment rental without operator"],
-    "definition": "Clauses creating joint liability, joint employment, or borrowed servant status. When renting equipment without operator to another crane company, they must be responsible for the crane value, and provide AI status and waivers of subrogation on GL, excess, auto, and workers comp.",
-    "suggestedAction": "Ensure liability and indemnity are clearly delineated. If bare-renting equipment, require the renter to be responsible for the crane's value, provide you additional insured on their GL and excess, and provide waivers of subrogation on GL, excess, auto, and workers comp.",
+    "definition": "Clauses creating joint liability, joint employment, or borrowed servant status. When renting equipment without an operator to another contractor, they must be responsible for the equipment's value, and provide AI status and waivers of subrogation on GL, excess, auto, and workers comp.",
+    "suggestedAction": "Ensure liability and indemnity are clearly delineated. If bare-renting equipment, require the renter to be responsible for the equipment's value, provide you additional insured on their GL and excess, and provide waivers of subrogation on GL, excess, auto, and workers comp.",
     "falsePositiveTraps": ["Independent contractor status (good)", "Standard rental terms with operator", "Equipment lease"],
     "confidenceRubric": {
       "explicit": "Explicit \"borrowed servant\" or \"joint venture\" language",
@@ -242,7 +242,7 @@
     "priority": "critical",
     "canonicalWording": "Certificates required past project completion (statute of repose)",
     "synonyms": ["statute of repose", "statute of limitations", "maintain insurance after completion", "tail coverage", "10 year certificates"],
-    "definition": "Requirement to maintain insurance/certificates for years after completion (e.g., 10 years for CA SB-800). Crane entities are service providers, not contractors - should not be subject to construction defect timelines. Remove certificate holders when project completes.",
+    "definition": "Requirement to maintain insurance/certificates for years after completion (e.g., 10 years for CA SB-800). Specialty service subcontractors should push back on multi-year construction-defect timelines that don't fit a discrete scope. Remove certificate holders when project completes.",
     "suggestedAction": "Reject contracts requiring a multi-year certificate tail. Do not provide certificates past project completion. When you renew, remove those certificate holders.",
     "falsePositiveTraps": ["Maintain during project", "1 year warranty period", "Until final payment"],
     "confidenceRubric": {
@@ -276,8 +276,8 @@
     "priority": "critical",
     "canonicalWording": "Traffic control indemnification (if not providing)",
     "synonyms": ["traffic control", "MOT", "maintenance of traffic", "traffic management"],
-    "definition": "Indemnity for traffic control operations when you are not providing the traffic control services. If you do provide traffic control, recommend separating that entity from crane/rigging to compartmentalize liability.",
-    "suggestedAction": "Do not indemnify for traffic control unless you're providing those services. If you do provide traffic control, consider wholly separating that entity from your crane/heavy haul operation to compartmentalize liability.",
+    "definition": "Indemnity for traffic control operations when you are not providing the traffic control services. If you do provide traffic control, recommend separating that entity from your core operations to compartmentalize liability.",
+    "suggestedAction": "Do not indemnify for traffic control unless you're providing those services. If you do provide traffic control, consider wholly separating that entity from your core operations to compartmentalize liability.",
     "falsePositiveTraps": ["Compliance with traffic laws", "Parking regulations", "You are providing traffic control"],
     "confidenceRubric": {
       "explicit": "Indemnity covers traffic control or MOT operations",
@@ -308,18 +308,18 @@
   {
     "provisionId": "scope-limit-rigging",
     "priority": "critical",
-    "canonicalWording": "Scope must be limited to crane service when others are rigging",
-    "synonyms": ["scope of work", "rigging responsibility", "hook only", "crane only service"],
-    "definition": "When you are only providing crane service and others are rigging, scope of work and indemnity must be limited to crane service only. The rigger should indemnify the crane company.",
-    "suggestedAction": "Ensure your contract limits indemnity to your actual scope (crane service only). The rigger should indemnify the crane company when you're only providing crane service.",
-    "falsePositiveTraps": ["Full scope including rigging", "Turnkey service", "You are providing rigging"],
+    "canonicalWording": "Scope must be limited to your actual work when others perform adjacent tasks",
+    "synonyms": ["scope of work", "work of others", "limited scope", "scope creep"],
+    "definition": "When you perform only a portion of the work and others perform adjacent or dependent tasks, your scope of work and indemnity must be limited to your actual work. The party performing the other work should indemnify you for their portion.",
+    "suggestedAction": "Ensure your contract limits indemnity to your actual scope. The party performing the adjacent or dependent work should indemnify you for their portion.",
+    "falsePositiveTraps": ["Full scope including others' work", "Turnkey service", "You are performing the full scope"],
     "confidenceRubric": {
-      "explicit": "Scope includes rigging by others or vague \"hoisting services\"",
-      "strongParaphrase": "Subcontractor responsible for all rigging even when not performing it",
+      "explicit": "Scope includes work performed by others or vague \"all related services\"",
+      "strongParaphrase": "Subcontractor responsible for work performed by others",
       "weak": "General scope description"
     },
-    "searchQueries": ["scope of work rigging", "crane service only", "rigging responsibility"],
-    "exactPatterns": ["rigging", "hoisting", "scope of work", "crane service", "hook"],
+    "searchQueries": ["scope of work limitation", "work performed by others", "scope responsibility"],
+    "exactPatterns": ["scope of work", "work of others", "performed by others", "responsibility for", "related work"],
     "clusterId": "scope"
   },
   {
@@ -344,8 +344,8 @@
     "priority": "critical",
     "canonicalWording": "GC's Warranty or Guarantee beyond standard workmanship",
     "synonyms": ["warranty", "guarantee", "warrant work", "guarantee of performance", "guarantee results"],
-    "definition": "Broad warranty or guarantee obligations beyond standard workmanship. Crane companies are service providers - warranty should be limited to proper operation of equipment.",
-    "suggestedAction": "Limit warranty to proper operation of equipment only. Crane companies are service providers—do not warrant construction outcomes or results.",
+    "definition": "Broad warranty or guarantee obligations beyond standard workmanship. Specialty subcontractors should limit warranty to the proper performance of their own work and equipment.",
+    "suggestedAction": "Limit warranty to the proper performance of your own work and equipment. Do not warrant overall construction outcomes or results beyond your scope.",
     "falsePositiveTraps": ["Standard workmanship warranty", "Manufacturer warranty", "Equipment warranty"],
     "confidenceRubric": {
       "explicit": "Broad warranty/guarantee of results or performance beyond standard workmanship",
@@ -359,18 +359,18 @@
   {
     "provisionId": "subcontractor-vs-service-provider",
     "priority": "high",
-    "canonicalWording": "\"Subcontractor\" should be \"Service Provider\"",
-    "synonyms": ["subcontractor definition", "service provider", "vendor", "contractor"],
-    "definition": "Crane companies are service providers, not subcontractors. Being called \"Subcontractor\" subjects you to construction contract obligations that may not apply to service providers.",
-    "suggestedAction": "Request that 'Subcontractor' be changed to 'Service Provider' or 'Vendor' to avoid construction-specific obligations that don't apply to crane service.",
-    "falsePositiveTraps": ["Already uses \"Service Provider\"", "Uses \"Vendor\""],
+    "canonicalWording": "\"Subcontractor\" label should match your role (crane or scaffold companies only)",
+    "synonyms": ["subcontractor definition", "service provider", "equipment provider", "vendor", "contractor", "crane", "rigging", "hoisting", "scaffold", "scaffolding"],
+    "definition": "Applies ONLY when the party performing the work is a crane company or a scaffold company. First determine that party's trade from the scope of work, contract title, exhibits, and party description. Crane companies (crane rental, crane service, rigging, hoisting, lifting) are service providers and should be called \"Service Provider\". Scaffold companies (scaffolding erection, rental, dismantling) are equipment providers and should be called \"Equipment Provider\". Every other trade (skylights, electrical, framing, roofing, etc.) is properly called a \"Subcontractor\", so this provision is NOT matched for them. Being labeled \"Subcontractor\" can subject a crane or scaffold company to construction obligations that do not fit their role.",
+    "suggestedAction": "Request that 'Subcontractor' be changed to 'Service Provider' (crane companies) or 'Equipment Provider' (scaffold companies).",
+    "falsePositiveTraps": ["The party is not a crane or scaffold company: calling them \"Subcontractor\" is correct, so matched=false", "Crane company already called \"Service Provider\"", "Scaffold company already called \"Equipment Provider\""],
     "confidenceRubric": {
-      "explicit": "Agreement refers to party as \"Subcontractor\"",
-      "strongParaphrase": "Agreement is titled \"Subcontract Agreement\"",
-      "weak": "Refers to \"Vendor\" or \"Supplier\""
+      "explicit": "Scope clearly shows a crane or scaffold company AND the agreement calls them \"Subcontractor\"",
+      "strongParaphrase": "Scope strongly indicates crane/rigging or scaffold work AND the agreement is titled \"Subcontract\" or \"Subcontract Agreement\"",
+      "weak": "Trade is unclear, or the party is any other trade (not matched)"
     },
-    "searchQueries": ["subcontractor definition", "service provider agreement", "subcontract terms"],
-    "exactPatterns": ["subcontractor", "subcontract", "sub-contractor"],
+    "searchQueries": ["scope of work", "subcontractor definition", "crane rigging hoisting", "scaffold scaffolding", "subcontract terms"],
+    "exactPatterns": ["subcontractor", "subcontract", "sub-contractor", "crane", "rigging", "scaffold"],
     "clusterId": "contract-terms"
   },
   {
@@ -461,18 +461,18 @@
   {
     "provisionId": "crane-cowork-liability",
     "priority": "high",
-    "canonicalWording": "Crane co-work: setup/takedown or multiple crane companies",
-    "synonyms": ["crane co-work", "multiple cranes", "setup takedown", "crane assist"],
-    "definition": "When multiple crane companies work together (setup/takedown, crane assist), liability must be clearly delineated. Who indemnifies whom? Both should not indemnify the GC with arising-out-of language.",
-    "suggestedAction": "Ensure liability and indemnity are clearly delineated between crane companies. Both parties should not indemnify the GC with arising-out-of language.",
-    "falsePositiveTraps": ["Single crane company", "Clear mutual indemnification", "Separate scopes"],
+    "canonicalWording": "Co-activity with other contractors on shared work",
+    "synonyms": ["co-activity", "multiple contractors", "shared work area", "joint operations"],
+    "definition": "When multiple contractors work together on the same task or in a shared work area, liability must be clearly delineated. Who indemnifies whom? Both should not indemnify the GC with arising-out-of language.",
+    "suggestedAction": "Ensure liability and indemnity are clearly delineated between the contractors. Both parties should not indemnify the GC with arising-out-of language.",
+    "falsePositiveTraps": ["Single contractor", "Clear mutual indemnification", "Separate scopes"],
     "confidenceRubric": {
-      "explicit": "Multiple crane operations without clear liability separation",
-      "strongParaphrase": "Both crane parties indemnifying GC broadly",
-      "weak": "Reference to other crane contractors"
+      "explicit": "Multiple contractors on shared work without clear liability separation",
+      "strongParaphrase": "Both parties indemnifying GC broadly",
+      "weak": "Reference to other contractors on shared work"
     },
-    "searchQueries": ["multiple crane operations", "crane setup takedown", "crane co-work liability"],
-    "exactPatterns": ["setup", "takedown", "assist", "multiple crane", "crane service"],
+    "searchQueries": ["multiple contractors shared work", "co-activity liability", "joint operations liability"],
+    "exactPatterns": ["setup", "shared work", "co-activity", "multiple contractors", "joint operations"],
     "clusterId": "scope"
   },
   {
@@ -516,7 +516,7 @@
     "synonyms": ["helicopter", "aerial lift", "air transport"],
     "definition": "Equipment being helicoptered in may be excluded from inland marine policies. Special aviation coverage may be needed. Verify coverage before accepting project.",
     "suggestedAction": "Verify aviation coverage with your agent before accepting the project. Your inland marine policy may exclude helicopter operations.",
-    "falsePositiveTraps": ["Ground transport only", "Standard crane operations", "Already have aviation coverage"],
+    "falsePositiveTraps": ["Ground transport only", "Standard ground operations", "Already have aviation coverage"],
     "confidenceRubric": {
       "explicit": "Equipment specifically transported by helicopter",
       "strongParaphrase": "Aerial lift or helicopter operations required",
@@ -682,18 +682,18 @@
   {
     "provisionId": "osip-riggers-exclusion",
     "priority": "medium",
-    "canonicalWording": "OCIP excluding riggers liability coverage",
-    "synonyms": ["OCIP riggers exclusion", "riggers liability not covered", "OCIP coverage gap"],
-    "definition": "Many OCIPs do not include riggers liability coverage - they rely on your riggers liability. Understand that you may be providing this coverage even when enrolled in OCIP.",
-    "suggestedAction": "Verify whether the OCIP includes riggers liability coverage. You may need to provide this coverage from your own policy even when enrolled in the OCIP.",
-    "falsePositiveTraps": ["OCIP includes riggers", "Full coverage OCIP", "No rigging work"],
+    "canonicalWording": "OCIP excluding a subcontractor's specialty coverage",
+    "synonyms": ["OCIP coverage gap", "specialty coverage not covered", "wrap-up exclusion"],
+    "definition": "Many OCIPs exclude certain specialty coverages and rely on the subcontractor's own policy. Understand that you may still be providing some coverage from your own policy even when enrolled in the OCIP.",
+    "suggestedAction": "Verify which coverages the OCIP includes and excludes. You may need to provide certain specialty coverage from your own policy even when enrolled in the OCIP.",
+    "falsePositiveTraps": ["OCIP includes all coverage", "Full coverage OCIP", "No specialty exposure"],
     "confidenceRubric": {
-      "explicit": "OCIP specifically excludes riggers liability",
-      "strongParaphrase": "Subcontractor responsible for own riggers liability under OCIP",
+      "explicit": "OCIP specifically excludes a specialty coverage",
+      "strongParaphrase": "Subcontractor responsible for own specialty coverage under OCIP",
       "weak": "OCIP coverage details not clear"
     },
-    "searchQueries": ["OCIP riggers liability", "riggers coverage exclusion", "OCIP coverage gaps"],
-    "exactPatterns": ["riggers liability", "riggers coverage", "rigging coverage", "excluded from OCIP"],
+    "searchQueries": ["OCIP coverage exclusions", "specialty coverage exclusion", "OCIP coverage gaps"],
+    "exactPatterns": ["specialty coverage", "excluded from OCIP", "not covered under OCIP", "own policy"],
     "clusterId": "insurance-programs"
   },
   {
@@ -733,17 +733,17 @@
   {
     "provisionId": "ocip-eligibility",
     "priority": "low",
-    "canonicalWording": "OCIP eligibility not guaranteed for crane/rigging",
+    "canonicalWording": "OCIP eligibility not guaranteed for all trades",
     "synonyms": ["OCIP eligibility", "excluded from OCIP", "wrap-up eligibility"],
-    "definition": "Crane/rigging excluded from OCIP approximately 1 in 3 times. Heavy haul almost always excluded (material transport only). Always verify eligibility with OCIP administrator before enrollment.",
-    "suggestedAction": "Always verify eligibility with the OCIP administrator before enrollment. Crane/rigging is excluded ~1 in 3 times; heavy haul is almost always excluded.",
+    "definition": "Some specialty trades and operations are excluded from OCIPs (material transport, for example, is often excluded). Always verify eligibility with the OCIP administrator before enrollment.",
+    "suggestedAction": "Always verify eligibility with the OCIP administrator before enrollment. Certain specialty trades and operations are commonly excluded.",
     "falsePositiveTraps": ["Mandatory enrollment", "Automatic coverage", "Confirmed eligibility"],
     "confidenceRubric": {
-      "explicit": "Crane/Rigging specifically excluded from OCIP",
+      "explicit": "A trade or operation specifically excluded from OCIP",
       "strongParaphrase": "Eligibility subject to OCIP administrator approval",
       "weak": "OCIP participation mentioned"
     },
-    "searchQueries": ["OCIP eligibility crane", "wrap-up enrollment requirements", "OCIP exclusions"],
+    "searchQueries": ["OCIP eligibility trades", "wrap-up enrollment requirements", "OCIP exclusions"],
     "exactPatterns": ["eligible", "eligibility", "excluded", "enrollment", "OCIP", "CCIP"],
     "clusterId": "insurance-programs"
   },
@@ -786,8 +786,8 @@
     "priority": "low",
     "canonicalWording": "Builders risk coverage and exclusions",
     "synonyms": ["builders risk", "property insurance", "course of construction", "BR coverage"],
-    "definition": "Terms regarding Builders Risk coverage. GCs may claim BR covers hoisted property, but BR often excludes contractor equipment (man lifts, etc.) that you may be rigging.",
-    "suggestedAction": "Do not assume Builder's Risk covers property you are rigging. Verify BR policy exclusions—contractor equipment is often excluded. Clarify coverage responsibility before the lift.",
+    "definition": "Terms regarding Builders Risk coverage. GCs may claim BR covers all property on site, but BR often excludes contractor tools and equipment that you may be handling or installing.",
+    "suggestedAction": "Do not assume Builder's Risk covers your tools and equipment. Verify BR policy exclusions—contractor equipment is often excluded. Clarify coverage responsibility before work begins.",
     "falsePositiveTraps": ["Contractor provides BR", "You provide BR", "Full coverage BR"],
     "confidenceRubric": {
       "explicit": "Builders Risk policy details/exclusions specified",
@@ -820,7 +820,7 @@
     "priority": "low",
     "canonicalWording": "Bill of lading / cargo responsibility terms",
     "synonyms": ["bill of lading", "cargo", "freight", "loading unloading", "transport responsibility"],
-    "definition": "For heavy haul, understand bill of lading terms for when you are responsible for property during loading, unloading, or transport.",
+    "definition": "For material transport and hauling, understand bill of lading terms for when you are responsible for property during loading, unloading, or transport.",
     "suggestedAction": "Review and understand bill of lading terms for cargo responsibility during loading, unloading, and transport. Clarify when liability transfers.",
     "falsePositiveTraps": ["No transport", "Customer loads/unloads", "Clear responsibility"],
     "confidenceRubric": {

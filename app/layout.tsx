@@ -17,8 +17,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Redline | Red Cedar Insurance Agency",
-  description: "Redline by Red Cedar Insurance Agency. Contract review tools developed to assist crane companies in identifying risks and unfavorable terms through automated contract analysis.",
+  title: "Red Cedar Suite | Red Cedar Insurance Agency",
+  description: "Customized tools developed to assist construction companies in reducing their risk through contract analysis and other risk management techniques.",
 };
 
 export default function RootLayout({
