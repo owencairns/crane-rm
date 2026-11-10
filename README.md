@@ -1,113 +1,78 @@
-# CertMaster Crane
+# Red Cedar construction risk suite
 
-AI-powered PDF contract review for crane and rigging workflows.
+AI tools Red Cedar offers its construction clients. Live at
+[tools.redcedaragency.com](https://tools.redcedaragency.com) (also `contractredliner.app`).
 
-## Current Architecture
+| Tool | Route | What it does |
+| --- | --- | --- |
+| Redline | `/redliner`, `/contracts/[id]` | Reviews a subcontract PDF against the provision catalog and flags risky clauses |
+| SubProtect | `/sub-protect` | Checks a certificate of insurance package against the insurance requirements |
+| AuditGuard | `/audit-guard` | Premium audit review (hidden unless `NEXT_PUBLIC_AUDITGUARD_ENABLED=true`) |
+| Threshold calculator | `/threshold-calculator` | WCIRB dual-wage threshold lookup |
+| Admin | `/admin` | Invitations, access windows, invite email template |
 
-- `Next.js 16` app for the UI
-- `Convex` for database, file storage, auth integration, mutations, queries, and background actions
-- `Better Auth` for email/password authentication, backed by Convex
-- `OpenAI` embeddings for chunk/vector generation
-- `Pinecone` for semantic retrieval
-- `Google Gemini` via the Vercel AI SDK for provision verification
+## Stack
 
-The old Firebase and Express-based contract pipeline is no longer part of the active app flow.
+- Next.js 16 (app router) on Vercel, project `crane-rm-frontend`
+- Convex for data, file storage, auth and background actions, project `crane-rm-redline`
+  (prod `limitless-dinosaur-363`, dev `brave-hamster-906`)
+- Better Auth (email and password, invitation only)
+- OpenAI for analysis, Mistral for PDF OCR, Brevo for invite email
 
-## Project Layout
-
-```text
-certmaster-crane/
-├── app/                    # Next.js app router pages
-├── components/             # UI components
-├── contexts/               # Client auth/session context
-├── convex/                 # Convex schema, functions, actions, auth, and analysis pipeline
-├── lib/                    # Shared client/server helpers
-└── package.json
-```
-
-## What Runs Where
-
-- Upload requests, contract reads, result reads, and status data come from Convex queries/mutations in `convex/contracts.ts`.
-- PDF ingestion, chunking, duplicate detection, embeddings, Pinecone indexing, and AI analysis run in Convex Node actions in `convex/contractNode.ts`.
-- The only remaining Next API route is `app/api/auth/[...all]/route.ts`, which exposes Better Auth over HTTP for the browser session flow.
-
-## Local Setup
-
-1. Install dependencies:
+## Local setup
 
 ```bash
 npm install
+npm run dev        # Next on :3000 and `convex dev` together
 ```
 
-2. Start Convex and generate local env values:
+`.env.local` needs `CONVEX_DEPLOYMENT`, `NEXT_PUBLIC_CONVEX_URL` and
+`NEXT_PUBLIC_CONVEX_SITE_URL` (written by `npx convex dev`). Server secrets live on the
+Convex deployment (`npx convex env list`): `OPENAI_API_KEY`, `MISTRAL_API_KEY`,
+`BETTER_AUTH_SECRET`, `BREVO_API_KEY`, `INVITE_EMAIL_FROM`, `SITE_URL`,
+`SUPER_ADMIN_EMAILS` / `ADMIN_EMAILS`, optional `OPENAI_ANALYSIS_MODEL` and
+`OPENAI_COI_OVERSEER_MODEL`.
+
+## Shipping a change
+
+`main` is production. Work on a branch and open a PR.
+
+1. CI (`.github/workflows/ci.yml`) runs typecheck and lint on every PR.
+2. Vercel builds a preview for every pushed branch. Check it from the PR.
+3. If the change touches `convex/`, deploy the backend before merging, since Vercel
+   does not deploy Convex:
+
+   ```bash
+   npx convex deploy        # pushes convex/ to prod limitless-dinosaur-363
+   ```
+
+   Keep backend changes backward compatible (new schema fields optional) so the live
+   frontend keeps working in the gap.
+4. Merge the PR. Vercel deploys `main` to production.
+
+Roll back the frontend by promoting the previous production deployment in the Vercel
+dashboard. Roll back Convex by checking out the previous commit and running
+`npx convex deploy` again.
+
+## Adjusting Redline findings
+
+- Provision wording, priority, definitions and search hints:
+  `convex/data/provisions.json`. Bump `catalogVersion` in
+  `convex/lib/analysisConfig.ts` when you change it.
+- Agent instructions: `convex/lib/prompts.ts`.
+- Trade-specific rules applied in code: `convex/lib/provisions.ts`. Today that is the
+  "Subcontractor" label rule. Crane companies should be called "Service Provider",
+  scaffold companies "Equipment Provider", and every other trade is correctly a
+  "Subcontractor", so the finding does not fire for them. Change the labels in
+  `PROVIDER_LABELS`, and the trade list in `ProviderType` (`convex/lib/types.ts`) plus
+  the `providerType` enum on `record_finding` (`convex/contractNode.ts`).
+
+Changes apply to new analyses only. Existing results keep the findings they were
+saved with, so re-upload a contract to see a new rule on it.
+
+## Checks
 
 ```bash
-npx convex dev
-```
-
-3. Add the required AI env vars to `.env.local`:
-
-```env
-OPENAI_API_KEY=...
-PINECONE_API_KEY=...
-GOOGLE_GENERATIVE_AI_API_KEY=...
-
-# Optional overrides
-PINECONE_INDEX_NAME=certmaster-contracts
-OPENAI_EMBEDDING_MODEL=text-embedding-3-small
-GOOGLE_ANALYSIS_MODEL=gemini-3-flash-preview
-SITE_URL=http://localhost:3000
-```
-
-`convex dev` will also populate the Convex deployment variables used by the app, including:
-
-```env
-CONVEX_DEPLOYMENT=...
-NEXT_PUBLIC_CONVEX_URL=...
-NEXT_PUBLIC_CONVEX_SITE_URL=...
-```
-
-4. Run the app:
-
-```bash
-npm run dev
-```
-
-Then open `http://localhost:3000`.
-
-## Available Scripts
-
-| Command | Description |
-| --- | --- |
-| `npm run dev` | Start Next.js |
-| `npm run dev:next` | Start Next.js |
-| `npm run dev:convex` | Start Convex dev |
-| `npm run dev:all` | Start Next.js and Convex together |
-| `npm run build` | Build Next.js |
-| `npm run start` | Start Next.js in production |
-| `npm run lint` | Run ESLint |
-| `npm run convex:codegen` | Generate Convex types |
-
-## Authentication
-
-- Auth is now email/password only.
-- Session state is provided through Better Auth + Convex.
-- The previous Firebase Auth and Google sign-in flow have been removed from the active application path.
-
-## Contract Processing Flow
-
-1. The dashboard requests a Convex upload URL.
-2. The browser uploads the PDF directly to Convex file storage.
-3. A Convex mutation marks the contract as uploaded and schedules processing.
-4. A Convex Node action parses the PDF, chunks text, checks for duplicates, generates embeddings, and upserts vectors into Pinecone.
-5. The same action runs the Gemini-based provision analysis workflow and stores findings back in Convex.
-6. The dashboard and contract detail pages read live contract and analysis state directly from Convex.
-
-## Verification
-
-The current migration has been validated with:
-
-```bash
-npm run lint
 npx tsc --noEmit
+npm run lint
 ```
