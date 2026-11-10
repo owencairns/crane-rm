@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useMemo, useState, useSyncExternalStore } from "react"
 import { useMutation, useQuery } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import {
@@ -169,6 +169,8 @@ function InviteForm() {
   )
 }
 
+const subscribeToNothing = () => () => {}
+
 function InvitationEmailCard({ adminEmail }: { adminEmail: string | null }) {
   const template = useQuery(api.emailTemplate.get)
   const save = useMutation(api.emailTemplate.save)
@@ -176,20 +178,19 @@ function InvitationEmailCard({ adminEmail }: { adminEmail: string | null }) {
   const [body, setBody] = useState("")
   const [loaded, setLoaded] = useState(false)
   const [saving, setSaving] = useState(false)
-  const [origin, setOrigin] = useState("")
-
-  useEffect(() => {
-    if (typeof window !== "undefined") setOrigin(window.location.origin)
-  }, [])
+  const origin = useSyncExternalStore(
+    subscribeToNothing,
+    () => window.location.origin,
+    () => ""
+  )
 
   // Seed the editor once the saved template arrives (don't clobber edits after).
-  useEffect(() => {
-    if (template && !loaded) {
-      setSubject(template.subject)
-      setBody(template.body)
-      setLoaded(true)
-    }
-  }, [template, loaded])
+  // Adjusting state during render avoids an extra effect-driven render pass.
+  if (template && !loaded) {
+    setSubject(template.subject)
+    setBody(template.body)
+    setLoaded(true)
+  }
 
   const base = origin || "https://tools.redcedaragency.com"
   const sampleVars = {

@@ -2,7 +2,7 @@ import { ConvexError, v } from "convex/values";
 import type { Doc } from "./_generated/dataModel";
 import { internal } from "./_generated/api";
 import { internalMutation, internalQuery, mutation, query, type MutationCtx, type QueryCtx } from "./_generated/server";
-import { getProvisionById } from "./lib/provisions";
+import { getFindingPresentation, getProvisionById } from "./lib/provisions";
 import { requireActiveAccess } from "./lib/access";
 import type { ChunkRecord, ContractImageRecord, ContractRecord, FindingRecord } from "./lib/types";
 
@@ -240,6 +240,10 @@ export const getResults = query({
       summary: `Analysis complete: ${matchedCount} provisions found, ${notFoundCount} not found.`,
       findings: findings.map((finding) => {
         const provision = getProvisionById(finding.provisionId);
+        const presentation = getFindingPresentation(provision, {
+          provisionId: finding.provisionId,
+          providerType: finding.providerType as FindingRecord["providerType"],
+        });
         return {
           id: finding.provisionId,
           priority: finding.priority,
@@ -247,7 +251,7 @@ export const getResults = query({
           confidence: finding.confidence,
           category: finding.priority,
           title:
-            provision?.canonicalWording ||
+            presentation.title ||
             finding.provisionId
               .split("-")
               .map((part) => `${part.charAt(0).toUpperCase()}${part.slice(1)}`)
@@ -256,7 +260,7 @@ export const getResults = query({
           pageReferences: finding.evidencePages,
           evidenceExcerpts: finding.evidenceExcerpts,
           recommendation: finding.recommendedAction,
-          suggestedAction: finding.matched ? provision?.suggestedAction : undefined,
+          suggestedAction: finding.matched ? presentation.suggestedAction : undefined,
           screeningResult: finding.screeningResult,
         };
       }),

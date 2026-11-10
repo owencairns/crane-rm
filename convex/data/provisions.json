@@ -359,18 +359,18 @@
   {
     "provisionId": "subcontractor-vs-service-provider",
     "priority": "high",
-    "canonicalWording": "\"Subcontractor\" should be \"Service Provider\"",
-    "synonyms": ["subcontractor definition", "service provider", "vendor", "contractor"],
-    "definition": "Some specialty trades function as service providers rather than subcontractors. Being labeled \"Subcontractor\" can subject you to construction contract obligations that may not apply to your actual role.",
-    "suggestedAction": "Where appropriate, request that 'Subcontractor' be changed to 'Service Provider' or 'Vendor' to avoid construction-specific obligations that don't apply to your services.",
-    "falsePositiveTraps": ["Already uses \"Service Provider\"", "Uses \"Vendor\""],
+    "canonicalWording": "\"Subcontractor\" label should match your role (crane or scaffold companies only)",
+    "synonyms": ["subcontractor definition", "service provider", "equipment provider", "vendor", "contractor", "crane", "rigging", "hoisting", "scaffold", "scaffolding"],
+    "definition": "Applies ONLY when the party performing the work is a crane company or a scaffold company. First determine that party's trade from the scope of work, contract title, exhibits, and party description. Crane companies (crane rental, crane service, rigging, hoisting, lifting) are service providers and should be called \"Service Provider\". Scaffold companies (scaffolding erection, rental, dismantling) are equipment providers and should be called \"Equipment Provider\". Every other trade (skylights, electrical, framing, roofing, etc.) is properly called a \"Subcontractor\", so this provision is NOT matched for them. Being labeled \"Subcontractor\" can subject a crane or scaffold company to construction obligations that do not fit their role.",
+    "suggestedAction": "Request that 'Subcontractor' be changed to 'Service Provider' (crane companies) or 'Equipment Provider' (scaffold companies).",
+    "falsePositiveTraps": ["The party is not a crane or scaffold company: calling them \"Subcontractor\" is correct, so matched=false", "Crane company already called \"Service Provider\"", "Scaffold company already called \"Equipment Provider\""],
     "confidenceRubric": {
-      "explicit": "Agreement refers to party as \"Subcontractor\"",
-      "strongParaphrase": "Agreement is titled \"Subcontract Agreement\"",
-      "weak": "Refers to \"Vendor\" or \"Supplier\""
+      "explicit": "Scope clearly shows a crane or scaffold company AND the agreement calls them \"Subcontractor\"",
+      "strongParaphrase": "Scope strongly indicates crane/rigging or scaffold work AND the agreement is titled \"Subcontract\" or \"Subcontract Agreement\"",
+      "weak": "Trade is unclear, or the party is any other trade (not matched)"
     },
-    "searchQueries": ["subcontractor definition", "service provider agreement", "subcontract terms"],
-    "exactPatterns": ["subcontractor", "subcontract", "sub-contractor"],
+    "searchQueries": ["scope of work", "subcontractor definition", "crane rigging hoisting", "scaffold scaffolding", "subcontract terms"],
+    "exactPatterns": ["subcontractor", "subcontract", "sub-contractor", "crane", "rigging", "scaffold"],
     "clusterId": "contract-terms"
   },
   {

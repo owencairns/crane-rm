@@ -93,6 +93,7 @@ export default defineSchema({
     reasoningSummary: v.string(),
     recommendedAction: v.optional(v.string()),
     screeningResult: v.optional(v.string()),
+    providerType: v.optional(v.string()),
     createdAt: v.number(),
   })
     .index("by_analysis", ["analysisId"])

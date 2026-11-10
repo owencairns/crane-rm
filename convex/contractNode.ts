@@ -9,7 +9,11 @@ import { internal } from "./_generated/api";
 import { analysisConfig } from "./lib/analysisConfig";
 import { generateChunkId, parsePdfWithOcr, chunkOcrPages } from "./lib/pdf";
 import { getSystemPrompt, getAnalysisPrompt } from "./lib/prompts";
-import { getProvisionCatalog, getProvisionCatalogVersion } from "./lib/provisions";
+import {
+  applyProviderLabelRule,
+  getProvisionCatalog,
+  getProvisionCatalogVersion,
+} from "./lib/provisions";
 import { getNodeConfig } from "./lib/nodeConfig";
 import type {
   ChunkRecord,
@@ -140,8 +144,15 @@ function createAgentTools(
         evidenceExcerpts: z.array(z.string()),
         reasoningSummary: z.string(),
         recommendedAction: z.string().optional(),
+        providerType: z
+          .enum(["crane", "scaffold", "other"])
+          .optional()
+          .describe(
+            "Required for subcontractor-vs-service-provider: the trade of the party performing the work, from the scope of work. crane = crane rental/service, rigging, hoisting. scaffold = scaffolding erection/rental/dismantling. other = any other trade."
+          ),
       }),
-      execute: async (finding) => {
+      execute: async (rawFinding) => {
+        const finding = applyProviderLabelRule(rawFinding);
         await ctx.runMutation(internal.contracts.upsertFindings, {
           contractId,
           analysisId,

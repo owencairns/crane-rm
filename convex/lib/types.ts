@@ -92,8 +92,12 @@ export interface FindingRecord {
   reasoningSummary: string;
   recommendedAction?: string;
   screeningResult?: ScreeningResult;
+  providerType?: ProviderType;
   createdAt: number;
 }
+
+/** Trade of the party performing the work, used by the "Subcontractor" label provision. */
+export type ProviderType = "crane" | "scaffold" | "other";
 
 export interface ParsedBlock {
   text: string;
