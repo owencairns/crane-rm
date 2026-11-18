@@ -145,6 +145,41 @@ export default defineSchema({
   }).index("by_owner", ["ownerId"]),
 
   /* ---------------------------------------------------------------- */
+  /*  CertMaster (for agents)                                         */
+  /*                                                                  */
+  /*  An agent uploads a contract or insurance exhibit; we extract the */
+  /*  minimum coverage it requires and fill an EXAMPLE ACORD 25 plus   */
+  /*  the description-of-operations wording.                          */
+  /* ---------------------------------------------------------------- */
+
+  certRequests: defineTable({
+    ownerId: v.string(),
+    filename: v.string(),
+    storageId: v.optional(v.id("_storage")),
+    // draft | uploaded | reading | extracting | generating | complete | failed
+    status: v.string(),
+    pageCount: v.optional(v.number()),
+    // List-view headline fields, cached from the requirements.
+    projectName: v.optional(v.string()),
+    holderName: v.optional(v.string()),
+    insuredName: v.optional(v.string()),
+    // JSON blobs: requirements as extracted, then as edited by the agent.
+    extractedRequirements: v.optional(v.string()),
+    requirements: v.optional(v.string()),
+    evidence: v.optional(v.string()),
+    checks: v.optional(v.string()),
+    remarks: v.optional(v.string()),
+    pdfStorageId: v.optional(v.id("_storage")),
+    model: v.optional(v.string()),
+    inputTokens: v.optional(v.number()),
+    outputTokens: v.optional(v.number()),
+    durationMs: v.optional(v.number()),
+    errorMessage: v.optional(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_owner", ["ownerId"]),
+
+  /* ---------------------------------------------------------------- */
   /*  Access control — invitation-only onboarding                     */
   /*                                                                  */
   /*  The suite is invitation-only. An admin issues an `invitation`   */

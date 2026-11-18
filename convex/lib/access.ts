@@ -133,6 +133,37 @@ export function requireAuditGuardEnabled(): void {
   }
 }
 
+/**
+ * Agency staff: admins, plus anyone whose email is on an agency domain
+ * (AGENT_EMAIL_DOMAINS, comma-separated, default redcedaragency.com).
+ * "For agents" tools are hidden from and refused to client logins.
+ */
+export function agentEmailDomains(): string[] {
+  const raw = process.env.AGENT_EMAIL_DOMAINS ?? "redcedaragency.com";
+  return raw
+    .split(",")
+    .map((d) => d.trim().toLowerCase().replace(/^@/, ""))
+    .filter(Boolean);
+}
+
+export function isAgentAccess(result: AccessResult): boolean {
+  if (result.state === "admin") return true;
+  if (result.state !== "active" || !result.email) return false;
+  const domain = result.email.split("@")[1] ?? "";
+  return agentEmailDomains().includes(domain);
+}
+
+/** Gate a "For agents" tool. Admins and active agency-staff logins pass. */
+export async function requireAgentAccess(
+  ctx: QueryCtx | MutationCtx
+): Promise<AccessResult> {
+  const result = await requireActiveAccess(ctx);
+  if (!isAgentAccess(result)) {
+    throw new ConvexError("This tool is for Red Cedar agents only.");
+  }
+  return result;
+}
+
 /** Gate an admin-only function. Returns the resolved access result. */
 export async function requireAdmin(
   ctx: QueryCtx | MutationCtx
