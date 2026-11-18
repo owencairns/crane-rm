@@ -12,6 +12,7 @@ import {
 import { authComponent } from "./auth";
 import {
   getAccessState,
+  isAgencyStaff,
   isAgentAccess,
   requireAgentAccess,
   type AccessResult,
@@ -20,9 +21,11 @@ import {
 /*
  * CertMaster: contract in, EXAMPLE ACORD 25 out.
  *
- * One shared agency workspace: every agent sees and can work every request
- * (like the standalone app's org queue). Only the uploader or an admin can
- * delete. The pipeline lives in certRequestNode.ts.
+ * Every user with suite access can use it. Red Cedar staff (admins and
+ * agency-domain logins) share one agency queue and can work any request,
+ * like the standalone app's org queue. Everyone else (client logins) only
+ * sees their own. Only the uploader or an admin can delete. The pipeline
+ * lives in certRequestNode.ts.
  */
 
 const IN_FLIGHT = new Set(["uploaded", "reading", "extracting", "generating"]);
@@ -42,7 +45,7 @@ async function requireRequest(
 ): Promise<{ request: Doc<"certRequests">; access: AccessResult; actor: string }> {
   const access = await requireAgentAccess(ctx);
   const request = await ctx.db.get(requestId);
-  if (!request || (request.status === "draft" && request.ownerId !== access.userId)) {
+  if (!request || !canSee(access, request) || (request.status === "draft" && request.ownerId !== access.userId)) {
     throw new ConvexError("Certificate request not found");
   }
   return { request, access, actor: await actorName(ctx, access) };
@@ -51,6 +54,11 @@ async function requireRequest(
 async function actorName(ctx: QueryCtx | MutationCtx, access: AccessResult): Promise<string> {
   const user = await authComponent.safeGetAuthUser(ctx);
   return user?.name?.trim() || access.email || "An agent";
+}
+
+/** Staff see the whole agency queue; everyone else only their own. */
+function canSee(access: AccessResult, request: Doc<"certRequests">): boolean {
+  return isAgencyStaff(access) || request.ownerId === access.userId;
 }
 
 function withEvent(request: Doc<"certRequests">, event: CertEvent) {
@@ -76,7 +84,13 @@ export const list = query({
   handler: async (ctx, { includeArchived }) => {
     const access = await agentOrNull(ctx);
     if (!access) return [];
-    const rows = await ctx.db.query("certRequests").order("desc").take(500);
+    const rows = isAgencyStaff(access)
+      ? await ctx.db.query("certRequests").order("desc").take(500)
+      : await ctx.db
+          .query("certRequests")
+          .withIndex("by_owner", (q) => q.eq("ownerId", access.userId))
+          .order("desc")
+          .take(500);
     return rows
       .filter((r) => r.status !== "draft" && (includeArchived || !r.archivedAt))
       .map((r) => {
@@ -107,7 +121,7 @@ export const get = query({
     const access = await agentOrNull(ctx);
     if (!access) return null;
     const r = await ctx.db.get(requestId);
-    if (!r || r.status === "draft") return null;
+    if (!r || r.status === "draft" || !canSee(access, r)) return null;
     return {
       id: r._id,
       filename: r.filename,

@@ -9,7 +9,7 @@ AI tools Red Cedar offers its construction clients. Live at
 | SubProtect | `/sub-protect` | Checks a certificate of insurance package against the insurance requirements |
 | AuditGuard | `/audit-guard` | Premium audit review (hidden unless `NEXT_PUBLIC_AUDITGUARD_ENABLED=true`) |
 | Threshold calculator | `/threshold-calculator` | WCIRB dual-wage threshold lookup |
-| CertMaster (for agents) | `/certmaster` | Reads a contract and drafts an EXAMPLE ACORD 25 with the minimum limits and Red Cedar remarks wording. Agency staff only |
+| CertMaster (for agents) | `/certmaster` | Reads a contract and drafts an EXAMPLE ACORD 25 with the minimum limits and Red Cedar remarks wording. Open to every user |
 | Admin | `/admin` | Invitations, access windows, invite email template |
 
 ## Stack
@@ -32,8 +32,8 @@ npm run dev        # Next on :3000 and `convex dev` together
 Convex deployment (`npx convex env list`): `OPENAI_API_KEY`, `MISTRAL_API_KEY`,
 `BETTER_AUTH_SECRET`, `BREVO_API_KEY`, `INVITE_EMAIL_FROM`, `SITE_URL`,
 `SUPER_ADMIN_EMAILS` / `ADMIN_EMAILS`, optional `OPENAI_ANALYSIS_MODEL`,
-`OPENAI_COI_OVERSEER_MODEL` and `AGENT_EMAIL_DOMAINS` (who sees the "For agents"
-tools besides admins; defaults to `redcedaragency.com`).
+`OPENAI_COI_OVERSEER_MODEL` and `AGENT_EMAIL_DOMAINS` (Red Cedar staff domains whose
+users share the CertMaster agency queue, besides admins; defaults to `redcedaragency.com`).
 
 ## Shipping a change
 
@@ -89,9 +89,10 @@ extraction calls, then fills `convex/lib/certmaster/acord25Template.ts`.
 Agents can fix the insured, holder and project in the UI; that re-fills the PDF without
 new AI calls.
 
-CertMaster is one shared agency workspace, like the standalone app's org queue: every
-agent sees every request, with who uploaded it, an activity trail, and archive. Only the
-uploader or an admin can delete. Documents up to 12 pages also go to the model as the
+Everyone with suite access can use CertMaster. Red Cedar staff (admins and
+`AGENT_EMAIL_DOMAINS` logins) share one agency queue, like the standalone app's org queue,
+with who uploaded each request, an activity trail, and archive. Client logins only see
+their own requests. Only the uploader or an admin can delete. Documents up to 12 pages also go to the model as the
 original PDF so it can read checkboxes on scans and sample certificates.
 
 ## Checks

@@ -276,7 +276,7 @@ export default function SuiteHomePage() {
           <section className="space-y-4">
             <SectionHeading
               title="For agents"
-              subtitle="Tools for the Red Cedar team. Clients don't see this section."
+              subtitle="The tools Red Cedar agents use day to day, open to everyone on the suite."
             />
             <div className="grid gap-4 sm:grid-cols-2">
               {AGENT_TOOLS.map((tool) => (

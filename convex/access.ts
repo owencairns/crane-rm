@@ -1,5 +1,5 @@
 import { query } from "./_generated/server";
-import { getAccessState, isAgentAccess } from "./lib/access";
+import { getAccessState, isAgencyStaff, isAgentAccess } from "./lib/access";
 
 /**
  * Current user's access status, used by the client access gate and to decide
@@ -14,6 +14,7 @@ export const myAccess = query({
         state: "unauthenticated" as const,
         isAdmin: false,
         isAgent: false,
+        isAgencyStaff: false,
         email: null as string | null,
         expiresAt: null as number | null,
       };
@@ -23,6 +24,7 @@ export const myAccess = query({
       state: result.state,
       isAdmin: result.state === "admin",
       isAgent: isAgentAccess(result),
+      isAgencyStaff: isAgencyStaff(result),
       email: result.email,
       expiresAt: result.expiresAt,
     };

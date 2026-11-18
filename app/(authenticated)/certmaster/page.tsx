@@ -58,6 +58,8 @@ function CertMasterHome() {
   const [scope, setScope] = useState<"all" | "mine">("all")
   const [search, setSearch] = useState("")
   const rows = useQuery(api.certRequests.list, { includeArchived: showArchived })
+  const access = useQuery(api.access.myAccess)
+  const isStaff = access?.isAgencyStaff ?? false
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
@@ -95,7 +97,7 @@ function CertMasterHome() {
         <section className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              <h2 className="text-xl font-semibold">Agency queue</h2>
+              <h2 className="text-xl font-semibold">{isStaff ? "Agency queue" : "Your certificates"}</h2>
               {rows && <Badge variant="secondary">{filtered.length}</Badge>}
             </div>
             <div className="flex flex-wrap items-center gap-2">
@@ -109,6 +111,7 @@ function CertMasterHome() {
                   aria-label="Search certificates"
                 />
               </div>
+              {isStaff && (
               <div className="flex rounded-lg border bg-background p-0.5 text-sm" role="tablist">
                 {(["all", "mine"] as const).map((s) => (
                   <button
@@ -126,6 +129,7 @@ function CertMasterHome() {
                   </button>
                 ))}
               </div>
+              )}
               <label className="flex items-center gap-2 rounded-lg border bg-background px-3 py-1.5 text-sm text-muted-foreground">
                 <input
                   type="checkbox"
@@ -151,7 +155,7 @@ function CertMasterHome() {
               <div className="hidden md:grid grid-cols-[minmax(0,2.2fr)_minmax(0,1.4fr)_minmax(0,1fr)_11rem_4.5rem] gap-4 border-b bg-muted/40 px-4 py-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 <span>Project / holder</span>
                 <span>Insured</span>
-                <span>Account manager</span>
+                <span>{isStaff ? "Account manager" : "Uploaded by"}</span>
                 <span className="text-right">Status</span>
                 <span className="text-right">Date</span>
               </div>
