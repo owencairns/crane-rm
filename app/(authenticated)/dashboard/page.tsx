@@ -4,7 +4,9 @@ import Link from "next/link"
 import { useAuth } from "@/contexts/AuthContext"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ArrowRight, ScrollText, ShieldCheck, Calculator, Scale } from "lucide-react"
+import { ArrowRight, ScrollText, ShieldCheck, Calculator, Scale, Stamp } from "lucide-react"
+import { useQuery } from "convex/react"
+import { api } from "@/convex/_generated/api"
 import { cn } from "@/lib/utils"
 import { AUDITGUARD_ENABLED } from "@/lib/features"
 import { ArBadgerCallout } from "@/components/ar-badger-callout"
@@ -149,6 +151,36 @@ const TOOLS: SuiteTool[] = [
   },
 ]
 
+const AGENT_TOOLS: SuiteTool[] = [
+  {
+    key: "certmaster",
+    name: "CertMaster",
+    tagline: "COI Drafting",
+    description:
+      "Upload a contract and get an example ACORD 25 with the minimum limits, the right boxes checked, and Red Cedar wording for the description of operations.",
+    href: "/certmaster",
+    icon: Stamp,
+    available: true,
+    panel: "bg-gradient-to-br from-rose-50 to-red-100",
+    pattern:
+      "bg-[repeating-linear-gradient(0deg,transparent_0,transparent_17px,rgb(225_29_72/0.12)_17px,rgb(225_29_72/0.12)_18px),repeating-linear-gradient(90deg,transparent_0,transparent_27px,rgb(225_29_72/0.08)_27px,rgb(225_29_72/0.08)_28px)]",
+    sticker: "text-rose-600",
+    // A little certificate that gets stamped on hover.
+    art: (
+      <div className="absolute right-6 top-1/2 -translate-y-1/2">
+        <div className="relative h-14 w-24 rounded-md bg-white/85 shadow-sm ring-1 ring-rose-600/10">
+          <span className="absolute left-2.5 top-2.5 h-1 w-12 rounded-full bg-rose-200" />
+          <span className="absolute left-2.5 top-5 h-1 w-16 rounded-full bg-rose-200" />
+          <span className="absolute left-2.5 top-[1.875rem] h-1 w-10 rounded-full bg-rose-200" />
+          <span className="absolute bottom-2 right-2 grid h-7 w-7 place-items-center rounded-full border-2 border-rose-500/70 text-[8px] font-black text-rose-600/80 opacity-0 scale-150 -rotate-12 transition-all duration-300 group-hover:opacity-100 group-hover:scale-100">
+            MIN
+          </span>
+        </div>
+      </div>
+    ),
+  },
+]
+
 function ToolTile({ tool }: { tool: SuiteTool }) {
   const Icon = tool.icon
   const card = (
@@ -218,6 +250,8 @@ function SectionHeading({ title, subtitle }: { title: string; subtitle: string }
 export default function SuiteHomePage() {
   const { user } = useAuth()
   const firstName = user?.displayName?.split(" ")[0]
+  const access = useQuery(api.access.myAccess)
+  const isAgent = access?.isAgent ?? false
 
   return (
     <div className="bg-muted/30 p-6 sm:p-8 min-h-full">
@@ -237,6 +271,20 @@ export default function SuiteHomePage() {
             ))}
           </div>
         </section>
+
+        {isAgent && (
+          <section className="space-y-4">
+            <SectionHeading
+              title="For agents"
+              subtitle="The tools Red Cedar agents use day to day, open to everyone on the suite."
+            />
+            <div className="grid gap-4 sm:grid-cols-2">
+              {AGENT_TOOLS.map((tool) => (
+                <ToolTile key={tool.key} tool={tool} />
+              ))}
+            </div>
+          </section>
+        )}
 
         <section className="space-y-4">
           <SectionHeading

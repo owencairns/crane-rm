@@ -9,6 +9,7 @@ AI tools Red Cedar offers its construction clients. Live at
 | SubProtect | `/sub-protect` | Checks a certificate of insurance package against the insurance requirements |
 | AuditGuard | `/audit-guard` | Premium audit review (hidden unless `NEXT_PUBLIC_AUDITGUARD_ENABLED=true`) |
 | Threshold calculator | `/threshold-calculator` | WCIRB dual-wage threshold lookup |
+| CertMaster (for agents) | `/certmaster` | Reads a contract and drafts an EXAMPLE ACORD 25 with the minimum limits and Red Cedar remarks wording. Open to every user |
 | Admin | `/admin` | Invitations, access windows, invite email template |
 
 ## Stack
@@ -30,8 +31,9 @@ npm run dev        # Next on :3000 and `convex dev` together
 `NEXT_PUBLIC_CONVEX_SITE_URL` (written by `npx convex dev`). Server secrets live on the
 Convex deployment (`npx convex env list`): `OPENAI_API_KEY`, `MISTRAL_API_KEY`,
 `BETTER_AUTH_SECRET`, `BREVO_API_KEY`, `INVITE_EMAIL_FROM`, `SITE_URL`,
-`SUPER_ADMIN_EMAILS` / `ADMIN_EMAILS`, optional `OPENAI_ANALYSIS_MODEL` and
-`OPENAI_COI_OVERSEER_MODEL`.
+`SUPER_ADMIN_EMAILS` / `ADMIN_EMAILS`, optional `OPENAI_ANALYSIS_MODEL`,
+`OPENAI_COI_OVERSEER_MODEL` and `AGENT_EMAIL_DOMAINS` (Red Cedar staff domains whose
+users share the CertMaster agency queue, besides admins; defaults to `redcedaragency.com`).
 
 ## Shipping a change
 
@@ -69,6 +71,29 @@ dashboard. Roll back Convex by checking out the previous commit and running
 
 Changes apply to new analyses only. Existing results keep the findings they were
 saved with, so re-upload a contract to see a new rule on it.
+
+## Adjusting CertMaster
+
+CertMaster (`convex/certRequests.ts`, `convex/certRequestNode.ts`) runs OCR, two parallel
+extraction calls, then fills `convex/lib/certmaster/acord25Template.ts`.
+
+- Description of operations wording: `convex/lib/certmaster/remarks.ts`. Sentences follow
+  Red Cedar's Certificate Issuance Guidelines; only names, policy labels and the project
+  are filled in from the contract.
+- Which form boxes get filled and how: `convex/lib/certmaster/filler.ts`. ADDL INSD and
+  SUBR WVD are text fields that take "Y"; checkboxes are drawn as X marks after the form
+  is flattened. Producer block constants live at the top.
+- Extraction instructions: `convex/lib/certmaster/prompts.ts`.
+- "Before you issue" checks and quote verification: `convex/lib/certmaster/assemble.ts`.
+
+Agents can fix the insured, holder and project in the UI; that re-fills the PDF without
+new AI calls.
+
+Everyone with suite access can use CertMaster. Red Cedar staff (admins and
+`AGENT_EMAIL_DOMAINS` logins) share one agency queue, like the standalone app's org queue,
+with who uploaded each request, an activity trail, and archive. Client logins only see
+their own requests. Only the uploader or an admin can delete. Documents up to 12 pages also go to the model as the
+original PDF so it can read checkboxes on scans and sample certificates.
 
 ## Checks
 

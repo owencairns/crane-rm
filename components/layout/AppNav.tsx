@@ -25,7 +25,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
-import { User, LogOut, ChevronDown, Mail, Calendar, Shield, ScrollText, ShieldCheck, Calculator, Scale } from "lucide-react"
+import { User, LogOut, ChevronDown, Mail, Calendar, Shield, ScrollText, ShieldCheck, Calculator, Scale, Stamp } from "lucide-react"
 import { toast } from "sonner"
 import { useRouter, usePathname } from "next/navigation"
 import { useQuery } from "convex/react"
@@ -48,6 +48,9 @@ export function AppNav() {
   const [showProfileModal, setShowProfileModal] = useState(false)
   const access = useQuery(api.access.myAccess)
   const isAdmin = access?.isAdmin ?? false
+  const navTools = access?.isAgent
+    ? [...SUITE_TOOLS, { name: "CertMaster", href: "/certmaster", icon: Stamp }]
+    : SUITE_TOOLS
 
   const handleSignOut = async () => {
     try {
@@ -86,7 +89,7 @@ export function AppNav() {
               </Link>
 
               <nav className="hidden md:flex items-center gap-1">
-                {SUITE_TOOLS.map((tool) => {
+                {navTools.map((tool) => {
                   const Icon = tool.icon
                   const active = pathname?.startsWith(tool.href)
                   return (

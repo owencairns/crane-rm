@@ -133,6 +133,39 @@ export function requireAuditGuardEnabled(): void {
   }
 }
 
+/**
+ * Agency staff: admins, plus anyone whose email is on an agency domain
+ * (AGENT_EMAIL_DOMAINS, comma-separated, default redcedaragency.com).
+ * Every active user can use the "For agents" tools; staff also share one
+ * agency-wide CertMaster queue, while everyone else only sees their own.
+ */
+export function agentEmailDomains(): string[] {
+  const raw = process.env.AGENT_EMAIL_DOMAINS ?? "redcedaragency.com";
+  return raw
+    .split(",")
+    .map((d) => d.trim().toLowerCase().replace(/^@/, ""))
+    .filter(Boolean);
+}
+
+export function isAgencyStaff(result: AccessResult): boolean {
+  if (result.state === "admin") return true;
+  if (result.state !== "active" || !result.email) return false;
+  const domain = result.email.split("@")[1] ?? "";
+  return agentEmailDomains().includes(domain);
+}
+
+/** Anyone with active suite access can use the "For agents" tools. */
+export function isAgentAccess(result: AccessResult): boolean {
+  return hasToolAccess(result.state);
+}
+
+/** Gate a "For agents" tool. Same bar as the rest of the suite. */
+export async function requireAgentAccess(
+  ctx: QueryCtx | MutationCtx
+): Promise<AccessResult> {
+  return requireActiveAccess(ctx);
+}
+
 /** Gate an admin-only function. Returns the resolved access result. */
 export async function requireAdmin(
   ctx: QueryCtx | MutationCtx
