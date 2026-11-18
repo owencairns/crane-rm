@@ -28,7 +28,10 @@ export function assembleRequirements(
     endorsements: parties.endorsements,
   };
 
-  // Resolve role names ("Owner") and fall back to the contract parties.
+  // Resolve role names ("Owner") and fall back to the contract parties. A
+  // bare role or placeholder is not a name.
+  if (isPlaceholderName(req.namedInsured.name)) req.namedInsured.name = null;
+  if (isPlaceholderName(req.contractInfo.parties.contractor)) req.contractInfo.parties.contractor = null;
   req.namedInsured = resolveNamedInsured(req);
   req.certificateHolder = resolveCertificateHolder(req);
 
@@ -55,6 +58,13 @@ export function assembleRequirements(
     ux.addlInsured;
 
   return req;
+}
+
+const PLACEHOLDER_NAME =
+  /^\(?\s*(the\s+)?(sub-?contractor|sub-?sub-?contractor|contractor|vendor|consultant|supplier|trade contractor|your company|insured|named insured|company name)\s*\)?$/i;
+
+function isPlaceholderName(name: string | null | undefined): boolean {
+  return !!name && PLACEHOLDER_NAME.test(name.trim());
 }
 
 /* ------------------------------------------------------------------ */
@@ -194,11 +204,41 @@ export function verifyEvidence(
 
 const money = (n: number) => `$${n.toLocaleString("en-US")}`;
 
-export function buildChecks(req: CertRequirements, evidence: VerifiedEvidence[]): CertCheck[] {
+export type DocumentSignals = { looksLikeIssuedCoi: boolean };
+
+/**
+ * An issued ACORD 25 (policy numbers, real carriers) rather than a contract
+ * or a requestor's sample. CertMaster would read the client's current
+ * coverage as if it were a requirement.
+ */
+export function detectDocumentSignals(text: string): DocumentSignals {
+  const acordFace =
+    /CERTIFICATE OF LIABILITY INSURANCE/i.test(text) && /INSURER\S* AFFORDING COVERAGE/i.test(text);
+  const sample = /\bsample\b|\bspecimen\b|\(your (agent|company)\)|\bexample only\b/i.test(text);
+  // Issued certs carry a certificate number and real NAIC codes.
+  const issued =
+    /CERTIFICATE NUMBER:?\s*\**\s*[A-Z0-9-]{5,}/i.test(text) || (text.match(/\b\d{5}\b/g) ?? []).length >= 3;
+  return { looksLikeIssuedCoi: acordFace && issued && !sample };
+}
+
+export function buildChecks(
+  req: CertRequirements,
+  evidence: VerifiedEvidence[],
+  signals: DocumentSignals = { looksLikeIssuedCoi: false },
+): CertCheck[] {
   const checks: CertCheck[] = [];
   const add = (id: string, severity: CertCheck["severity"], title: string, detail: string) =>
     checks.push({ id, severity, title, detail });
   const c = req.coverages;
+
+  if (signals.looksLikeIssuedCoi) {
+    add(
+      "input.issuedCoi",
+      "error",
+      "This looks like an issued certificate, not a contract",
+      "The upload reads like an ACORD 25 that was already issued, so the limits here are the client's current coverage, not what a contract requires. Upload the contract or insurance exhibit instead, or use SubProtect to check this certificate against one.",
+    );
+  }
 
   if (!req.certificateHolder.name) {
     add(

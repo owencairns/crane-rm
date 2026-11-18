@@ -1,3 +1,6 @@
+/** Agent time a drafted certificate saves, from the standalone CertMaster dashboard. */
+export const MINUTES_SAVED_PER_CERT = 12
+
 export const CERT_IN_FLIGHT = ["uploaded", "reading", "extracting", "generating"]
 
 export function certStatusLabel(status: string): string {

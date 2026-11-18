@@ -89,6 +89,11 @@ extraction calls, then fills `convex/lib/certmaster/acord25Template.ts`.
 Agents can fix the insured, holder and project in the UI; that re-fills the PDF without
 new AI calls.
 
+CertMaster is one shared agency workspace, like the standalone app's org queue: every
+agent sees every request, with who uploaded it, an activity trail, and archive. Only the
+uploader or an admin can delete. Documents up to 12 pages also go to the model as the
+original PDF so it can read checkboxes on scans and sample certificates.
+
 ## Checks
 
 ```bash

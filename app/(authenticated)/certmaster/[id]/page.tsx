@@ -44,6 +44,7 @@ import {
   RotateCcw,
   Stamp,
   Trash2,
+  Archive,
   XCircle,
 } from "lucide-react"
 import { toast } from "sonner"
@@ -71,6 +72,8 @@ function CertRequestView() {
   const requestId = params.id as Id<"certRequests">
   const data = useQuery(api.certRequests.get, { requestId })
   const rerun = useMutation(api.certRequests.rerun)
+  const setArchived = useMutation(api.certRequests.setArchived)
+  const [view, setView] = useState<"cert" | "source">("cert")
   const remove = useMutation(api.certRequests.remove)
   const [editOpen, setEditOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
@@ -126,9 +129,11 @@ function CertRequestView() {
               </div>
               <h1 className="text-2xl font-bold tracking-tight truncate">{title}</h1>
               {data.edited && <Badge variant="outline">Edited</Badge>}
+              {data.archived && <Badge variant="secondary">Archived</Badge>}
             </div>
             <p className="text-sm text-muted-foreground">
               {[
+                data.uploadedBy && `Uploaded by ${data.uploadedBy}`,
                 data.insuredName && `Insured: ${data.insuredName}`,
                 data.holderName && `Holder: ${data.holderName}`,
                 data.filename,
@@ -157,6 +162,18 @@ function CertRequestView() {
               </Button>
             )}
             {!inFlight && (
+              <Button
+                variant="ghost"
+                className="gap-2"
+                onClick={async () => {
+                  await setArchived({ requestId, archived: !data.archived })
+                  toast.success(data.archived ? "Back in the queue" : "Archived")
+                }}
+              >
+                <Archive className="h-4 w-4" /> {data.archived ? "Unarchive" : "Archive"}
+              </Button>
+            )}
+            {!inFlight && data.canDelete && (
               <Button
                 variant="ghost"
                 size="icon"
@@ -192,15 +209,36 @@ function CertRequestView() {
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] items-start">
             <Card className="overflow-hidden p-0 lg:sticky lg:top-4">
               <div className="flex items-center justify-between border-b px-4 py-2.5">
-                <span className="text-sm font-medium">Example ACORD 25</span>
+                <div className="flex rounded-lg border bg-muted/40 p-0.5 text-sm" role="tablist">
+                  {([
+                    ["cert", "Example ACORD 25"],
+                    ["source", "Original contract"],
+                  ] as const).map(([key, label]) => (
+                    <button
+                      key={key}
+                      type="button"
+                      role="tab"
+                      aria-selected={view === key}
+                      onClick={() => setView(key)}
+                      className={cn(
+                        "rounded-md px-3 py-1 transition-colors",
+                        view === key
+                          ? "bg-background font-medium shadow-sm"
+                          : "text-muted-foreground hover:text-foreground",
+                      )}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
                 {regenerating ? (
                   <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
                     <Loader2 className="h-3.5 w-3.5 animate-spin" /> Updating…
                   </span>
                 ) : (
-                  data.pdfUrl && (
+                  (view === "cert" ? data.pdfUrl : data.sourceUrl) && (
                     <a
-                      href={data.pdfUrl}
+                      href={(view === "cert" ? data.pdfUrl : data.sourceUrl) ?? undefined}
                       target="_blank"
                       rel="noreferrer"
                       className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
@@ -210,7 +248,11 @@ function CertRequestView() {
                   )
                 )}
               </div>
-              {data.pdfUrl ? (
+              {view === "source" && data.sourceUrl ? (
+                <div className="max-h-[80vh] overflow-y-auto bg-white">
+                  <PdfPreview key={data.sourceUrl} url={data.sourceUrl} maxPages={25} />
+                </div>
+              ) : data.pdfUrl ? (
                 <div className="max-h-[80vh] overflow-y-auto bg-white">
                   <PdfPreview key={data.pdfUrl} url={data.pdfUrl} />
                 </div>
@@ -225,18 +267,18 @@ function CertRequestView() {
               <ChecksCard checks={checks} />
               <WordingCard remarks={data.remarks ?? ""} />
               <MinimumsCard req={req} evidence={evidence} />
-              <p className="text-xs text-muted-foreground">
-                Source:{" "}
-                {data.sourceUrl ? (
-                  <a href={data.sourceUrl} target="_blank" rel="noreferrer" className="underline">
-                    {data.filename}
-                  </a>
-                ) : (
-                  data.filename
-                )}
-                {data.durationMs ? ` · drafted in ${Math.round(data.durationMs / 1000)}s` : ""}
-                {data.model ? ` · ${data.model}` : ""}
-              </p>
+              <AuditTrail
+                events={data.events}
+                footer={[
+                  data.durationMs ? `Drafted in ${Math.round(data.durationMs / 1000)}s` : null,
+                  data.model,
+                  data.inputTokens != null && data.outputTokens != null
+                    ? `${(data.inputTokens + data.outputTokens).toLocaleString("en-US")} tokens`
+                    : null,
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
+              />
             </div>
           </div>
         ) : null}
@@ -596,6 +638,76 @@ function EvidenceList({ items }: { items: VerifiedEvidence[] }) {
         </ul>
       )}
     </div>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+
+const EVENT_LABEL: Record<string, string> = {
+  uploaded: "Uploaded",
+  reading: "Reading the contract",
+  extracting: "Finding requirements",
+  complete: "Example certificate ready",
+  failed: "Failed",
+  rerun: "Run again",
+  edited: "Details edited",
+  reset: "Reset to the contract",
+  regenerated: "PDF updated",
+  archived: "Archived",
+  unarchived: "Unarchived",
+}
+
+function AuditTrail({
+  events,
+  footer,
+}: {
+  events: Array<{ at: number; type: string; by?: string; detail?: string }>
+  footer: string
+}) {
+  const [all, setAll] = useState(false)
+  const ordered = [...events].reverse()
+  const shown = all ? ordered : ordered.slice(0, 6)
+  return (
+    <Card className="p-5 space-y-3">
+      <h2 className="font-semibold">Activity</h2>
+      {shown.length === 0 ? (
+        <p className="text-sm text-muted-foreground">No activity recorded.</p>
+      ) : (
+        <ol className="space-y-2.5">
+          {shown.map((e, i) => (
+            <li key={`${e.at}-${i}`} className="flex gap-3 text-sm">
+              <span
+                className={cn(
+                  "mt-1.5 h-2 w-2 shrink-0 rounded-full",
+                  e.type === "failed" ? "bg-red-500" : e.type === "complete" ? "bg-emerald-500" : "bg-muted-foreground/40",
+                )}
+              />
+              <div className="min-w-0">
+                <p>
+                  <span className="font-medium">{EVENT_LABEL[e.type] ?? e.type}</span>
+                  {e.by && <span className="text-muted-foreground"> by {e.by}</span>}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {new Date(e.at).toLocaleString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    hour: "numeric",
+                    minute: "2-digit",
+                  })}
+                  {e.detail ? ` · ${e.detail}` : ""}
+                </p>
+              </div>
+            </li>
+          ))}
+        </ol>
+      )}
+      {ordered.length > 6 && (
+        <button type="button" onClick={() => setAll((v) => !v)} className="text-xs font-medium text-primary hover:underline">
+          {all ? "Show less" : `Show all ${ordered.length}`}
+        </button>
+      )}
+      {footer && <p className="border-t pt-3 text-xs text-muted-foreground">{footer}</p>}
+    </Card>
   )
 }
 

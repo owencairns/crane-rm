@@ -12,7 +12,7 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
 ).toString()
 
 /** Renders every page of a PDF at the container's width. */
-export default function PdfPreview({ url }: { url: string }) {
+export default function PdfPreview({ url, maxPages }: { url: string; maxPages?: number }) {
   const ref = useRef<HTMLDivElement>(null)
   const [width, setWidth] = useState<number>()
   const [pages, setPages] = useState(0)
@@ -37,7 +37,7 @@ export default function PdfPreview({ url }: { url: string }) {
         }
         error={<div className="p-6 text-sm text-muted-foreground">Could not show the PDF here. Use Download.</div>}
       >
-        {Array.from({ length: pages }, (_, i) => (
+        {Array.from({ length: maxPages ? Math.min(pages, maxPages) : pages }, (_, i) => (
           <Page
             key={i}
             pageNumber={i + 1}
@@ -48,6 +48,11 @@ export default function PdfPreview({ url }: { url: string }) {
           />
         ))}
       </Document>
+      {maxPages && pages > maxPages && (
+        <p className="p-4 text-center text-xs text-muted-foreground">
+          Showing the first {maxPages} of {pages} pages. Use Open for the rest.
+        </p>
+      )}
     </div>
   )
 }

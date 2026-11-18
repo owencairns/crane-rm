@@ -13,6 +13,8 @@ RULES
 - "$2,000,000 each occurrence / $4,000,000 aggregate" means eachOccurrence 2000000 and generalAggregate 4000000. Do not combine primary and umbrella limits unless the document says the total can be met that way; if it does, record the primary limits it states and explain the combination in notes.
 - When the document gives different limits by contract value or risk tier with no condition about the work, use the tier that applies to THIS contract if you can tell; otherwise use the highest tier and explain in notes.
 - Ignore disability insurance, unemployment insurance/compensation, state disability, paid family leave, payroll taxes, and government benefit programs. Workers compensation and employers liability are in scope.
+- Some requestors send a SAMPLE or template ACORD 25 that shows what they want. Treat its checked boxes, Y marks, limits and remarks as the requirements.
+- When the original PDF is attached, use it to read checkboxes, tables, handwriting and scanned pages; the OCR text can lose checkbox marks. Page numbers still follow the "=== PAGE n ===" markers.
 - Evidence: for each value you extract, add { field, page, excerpt }. "page" is the 1-based number from the "=== PAGE n ===" marker the text sits under. "excerpt" is copied character for character from that page (keep typos and punctuation), 5 to 40 words. Never paraphrase an excerpt.`;
 
 export function getCoverageExtractionPrompt(documentText: string): string {
@@ -44,7 +46,7 @@ workersComp
 - required: true if workers compensation is required.
 - wcStatutory: true when statutory limits are required (that is the normal wording).
 - subrogationWaived: true if a waiver of subrogation applies to WC (or to "all policies").
-- employersLiability: eachAccident, diseaseEachEmployee, diseasePolicyLimit.
+- employersLiability: eachAccident, diseaseEachEmployee, diseasePolicyLimit. A single figure ("Employers Liability $1,000,000") applies to all three.
 
 other: one entry per other coverage the document requires unconditionally (professional/E&O, pollution/contractors pollution, rigging/riggers liability, installation floater, builder's risk, cyber, aircraft, watercraft, railroad protective, crane/hook, inland marine, etc.).
 - coverageName: the coverage as the document names it.
@@ -71,7 +73,7 @@ TASK: extract the parties, project, certificate wording requirements and endorse
 
 contractInfo: projectName, contractNumber, parties.contractor (the party that carries the insurance), parties.requestor (the party demanding the certificate), certDeadline (when certificates are due, as written), notes.
 
-namedInsured: the entity whose policies the certificate evidences (the INSURED box). Usually the Contractor/Subcontractor/Vendor/Consultant that must carry insurance. Resolve defined terms ("Subcontractor") to the full legal name and mailing address from the preamble, party blocks, signature blocks, or notice section. Never use the owner, general contractor, certificate holder, or the insurance agent unless the document says that entity carries the insurance. Address strings may be "" when unknown; line2 may be null.
+namedInsured: the entity whose policies the certificate evidences (the INSURED box). Usually the Contractor/Subcontractor/Vendor/Consultant that must carry insurance. Resolve defined terms ("Subcontractor") to the full legal name and mailing address from the preamble, party blocks, signature blocks, or notice section. Never use the owner, general contractor, certificate holder, or the insurance agent unless the document says that entity carries the insurance. If the document never names the party (only a role like "Subcontractor" or a placeholder like "(Your Company)"), name is null. Address strings may be "" when unknown; line2 may be null.
 
 certificateHolder: the party the certificate is issued to or must be furnished to.
   a. An explicit certificate holder block or name wins.
@@ -79,6 +81,7 @@ certificateHolder: the party the certificate is issued to or must be furnished t
   c. Resolve roles ("Contractor", "Owner") to the full legal name and address from page 1, party definitions, signature blocks, or notice addresses.
   d. If several recipients are listed, use the main party requiring insurance; put the others in additionalInsuredParties or notes.
   Never use the named insured as the certificate holder.
+  name is the legal entity only. "c/o ...", "Attn: ...", and department lines go in address.line1 / line2, followed by the street address (e.g. name "Cahill Contractors LLC", line1 "c/o Lockton Companies, Attn: Diane Gibbons", line2 "8110 E. Union Ave., Suite 100").
 
 descriptionOfOperations
 - text: one plain sentence describing the work/project for the Description of Operations box, built only from document facts (project name, job number, site address). Null if there is nothing to say.

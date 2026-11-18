@@ -153,7 +153,10 @@ export default defineSchema({
   /* ---------------------------------------------------------------- */
 
   certRequests: defineTable({
+    // Uploader. The workspace is shared: every agent sees every request.
     ownerId: v.string(),
+    uploadedByEmail: v.optional(v.string()),
+    uploadedByName: v.optional(v.string()),
     filename: v.string(),
     storageId: v.optional(v.id("_storage")),
     // draft | uploaded | reading | extracting | generating | complete | failed
@@ -169,12 +172,27 @@ export default defineSchema({
     evidence: v.optional(v.string()),
     checks: v.optional(v.string()),
     remarks: v.optional(v.string()),
+    // "requirements" | "issuedCoi" (someone uploaded a certificate, not a contract)
+    docKind: v.optional(v.string()),
     pdfStorageId: v.optional(v.id("_storage")),
     model: v.optional(v.string()),
     inputTokens: v.optional(v.number()),
     outputTokens: v.optional(v.number()),
     durationMs: v.optional(v.number()),
     errorMessage: v.optional(v.string()),
+    // Soft delete: hidden from the queue and stats, kept in storage.
+    archivedAt: v.optional(v.number()),
+    // Audit trail, newest last (capped at 100).
+    events: v.optional(
+      v.array(
+        v.object({
+          at: v.number(),
+          type: v.string(),
+          by: v.optional(v.string()),
+          detail: v.optional(v.string()),
+        })
+      )
+    ),
     createdAt: v.number(),
     updatedAt: v.number(),
   }).index("by_owner", ["ownerId"]),

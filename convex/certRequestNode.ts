@@ -21,6 +21,7 @@ import {
   applyEdits,
   assembleRequirements,
   buildChecks,
+  detectDocumentSignals,
   verifyEvidence,
 } from "./lib/certmaster/assemble";
 import { buildCertRemarks } from "./lib/certmaster/remarks";
@@ -36,6 +37,8 @@ function log(message: string, ctx?: Record<string, unknown>) {
  * about insurance, instead of all of it. Keeps cost and latency flat.
  */
 const FULL_TEXT_CHAR_LIMIT = 160_000;
+const ATTACH_PDF_MAX_PAGES = 12;
+const ATTACH_PDF_MAX_BYTES = 15 * 1024 * 1024;
 const INSURANCE_PAGE =
   /insur|certificate|additional insured|subrogation|primary and non|non-?contributory|umbrella|excess liab|workers'? comp|employer'?s'? liab|general liability|automobile|aggregate|endorse|\bCG ?20|indemn/i;
 
@@ -107,10 +110,11 @@ export const run = internalAction({
 
     try {
       // 1. OCR
-      await patch({ status: "reading", errorMessage: "" });
+      await patch({ status: "reading", errorMessage: "", event: { type: "reading" } });
       const blob = await ctx.storage.get(request.storageId);
       if (!blob) throw new Error("Uploaded file not found in storage");
-      const ocr = await parsePdfWithOcr(Buffer.from(await blob.arrayBuffer()), config.mistral.apiKey);
+      const pdfBytes = Buffer.from(await blob.arrayBuffer());
+      const ocr = await parsePdfWithOcr(pdfBytes, config.mistral.apiKey);
       if (ocr.pages.length === 0 || ocr.rawMarkdown.trim().length < 50) {
         throw new Error("Could not read any text from this PDF");
       }
@@ -119,18 +123,44 @@ export const run = internalAction({
       log("ocr done", { requestId, pages: ocr.pages.length, sent: pages.length, chars: text.length });
 
       // 2. Extract (two focused calls in parallel)
-      await patch({ status: "extracting", pageCount: ocr.pages.length });
+      await patch({
+        status: "extracting",
+        pageCount: ocr.pages.length,
+        event: { type: "extracting", detail: `${ocr.pages.length} pages read${trimmed ? `, ${pages.length} insurance pages sent` : ""}` },
+      });
+      // Short documents also go to the model as the original PDF, so it can
+      // see checkboxes and scanned tables the OCR text flattens.
+      const attachPdf =
+        ocr.pages.length <= ATTACH_PDF_MAX_PAGES && pdfBytes.length <= ATTACH_PDF_MAX_BYTES;
+      const messagesFor = (prompt: string) => [
+        {
+          role: "user" as const,
+          content: [
+            { type: "text" as const, text: prompt },
+            ...(attachPdf
+              ? [
+                  {
+                    type: "file" as const,
+                    data: pdfBytes,
+                    mediaType: "application/pdf",
+                    filename: request.filename,
+                  },
+                ]
+              : []),
+          ],
+        },
+      ];
       const [coverageResult, partiesResult] = await Promise.all([
         generateObject({
           model,
           schema: coverageExtractionSchema,
-          prompt: getCoverageExtractionPrompt(text),
+          messages: messagesFor(getCoverageExtractionPrompt(text)),
           maxRetries: 3,
         }),
         generateObject({
           model,
           schema: partiesExtractionSchema,
-          prompt: getPartiesExtractionPrompt(text),
+          messages: messagesFor(getPartiesExtractionPrompt(text)),
           maxRetries: 3,
         }),
       ]);
@@ -141,7 +171,8 @@ export const run = internalAction({
         assembleRequirements(coverageResult.object, partiesResult.object),
       );
       const evidence = verifyEvidence(req, ocr.pages);
-      const checks = buildChecks(req, evidence);
+      const signals = detectDocumentSignals(ocr.rawMarkdown);
+      const checks = buildChecks(req, evidence, signals);
       const remarks = buildCertRemarks(req);
 
       // 4. Fill the example ACORD 25
@@ -157,6 +188,7 @@ export const run = internalAction({
           requirements: json,
           evidence: JSON.stringify(evidence),
           checks: JSON.stringify(checks),
+          docKind: signals.looksLikeIssuedCoi ? "issuedCoi" : "requirements",
           remarks,
           model: modelId,
           inputTokens:
@@ -164,6 +196,10 @@ export const run = internalAction({
           outputTokens:
             (coverageResult.usage.outputTokens ?? 0) + (partiesResult.usage.outputTokens ?? 0),
           durationMs: Date.now() - started,
+          event: {
+            type: "complete",
+            detail: `${checks.filter((c) => c.severity !== "info").length} items to check`,
+          },
           ...headline(req),
         },
       });
@@ -171,7 +207,7 @@ export const run = internalAction({
     } catch (error) {
       const message = error instanceof Error ? error.message : "Certificate generation failed";
       log("failed", { requestId, message });
-      await patch({ status: "failed", errorMessage: message.slice(0, 500) });
+      await patch({ status: "failed", errorMessage: message.slice(0, 500), event: { type: "failed", detail: message.slice(0, 200) } });
     }
   },
 });
@@ -211,8 +247,11 @@ export const regenerate = internalAction({
           // Reset stores the extracted blob verbatim so the UI's "edited"
           // comparison goes back to false.
           requirements: reset ? request.extractedRequirements : JSON.stringify(req),
-          checks: JSON.stringify(buildChecks(req, evidence)),
+          checks: JSON.stringify(
+            buildChecks(req, evidence, { looksLikeIssuedCoi: request.docKind === "issuedCoi" }),
+          ),
           remarks: buildCertRemarks(req),
+          event: { type: "regenerated" },
           ...headline(req),
         },
       });
